@@ -85,7 +85,7 @@
             z-index: 20;
         }
 
-        /* 散发光晕 (Aura) - 默认隐藏 */
+        /* 散发光晕 */
         .core-aura {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 50px; height: 50px; border-radius: 50%;
@@ -100,7 +100,6 @@
             box-shadow: 0 0 30px var(--primary-gold), 0 0 60px var(--primary-gold);
             animation: corePulse 3s infinite ease-in-out;
             z-index: 5; position: relative;
-            /* 关键：增加过渡效果 */
             transition: transform 0.1s linear, box-shadow 0.1s linear, background 0.2s;
             will-change: transform, box-shadow;
         }
@@ -127,38 +126,17 @@
         .ring-2 { width: 140px; height: 140px; border-bottom-color: var(--primary-gold); animation: spin 12s linear infinite reverse; }
         .ring-3 { width: 190px; height: 190px; border: 1px dashed rgba(255, 255, 255, 0.1); animation: spin 20s linear infinite; }
 
-        /* === 汇聚状态 (长按) 核心样式修改 === */
-        
-        /* 1. 核心: 变大、超级亮 */
+        /* === 汇聚状态 (长按) === */
         .avatar-container.channeling .energy-core { 
-            animation: none; 
-            background: #fff; /* 纯白核心 */
+            animation: none; background: #fff; 
         }
         .avatar-container.channeling .energy-core::after { display: none; }
-        
-        /* 2. 开启光晕扩散动画 */
-        .avatar-container.channeling .core-aura {
-            opacity: 1;
-            animation: auraPulse 1s infinite ease-out;
-        }
-        @keyframes auraPulse {
-            0% { width: 50px; height: 50px; opacity: 0.8; }
-            100% { width: 250px; height: 250px; opacity: 0; }
-        }
-
-        /* 3. 光环: 亮蓝，加速 */
-        .avatar-container.channeling .energy-ring { 
-            border-color: rgba(0, 242, 255, 0.9); 
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
-            border-width: 2px; 
-        }
+        .avatar-container.channeling .core-aura { opacity: 1; animation: auraPulse 1s infinite ease-out; }
+        @keyframes auraPulse { 0% { width: 50px; height: 50px; opacity: 0.8; } 100% { width: 250px; height: 250px; opacity: 0; } }
+        .avatar-container.channeling .energy-ring { border-color: rgba(0, 242, 255, 0.9); box-shadow: 0 0 20px rgba(0, 242, 255, 0.5); border-width: 2px; }
         .avatar-container.channeling .ring-1 { animation: spin 1s linear infinite; border-top-color: #fff; }
         .avatar-container.channeling .ring-2 { animation: spin 1.5s linear infinite reverse; border-bottom-color: var(--neon-blue); }
-        .avatar-container.channeling .ring-3 { 
-            border-style: solid; border-color: rgba(0, 242, 255, 0.3); 
-            width: 180px; height: 180px;
-            animation: spin 3s linear infinite; 
-        }
+        .avatar-container.channeling .ring-3 { border-style: solid; border-color: rgba(0, 242, 255, 0.3); width: 180px; height: 180px; animation: spin 3s linear infinite; }
 
         .realm-badge {
             position: absolute; bottom: -10px;
@@ -287,7 +265,6 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.96); z-index: 2000;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: background-color 0.1s;
         }
         .thunder-bolt {
             position: absolute; top: 0; left: 50%; 
@@ -556,7 +533,6 @@ const generateSkills = () => {
         "袖里乾坤", "真·吃吃吃", "吞天魔功", "一念花开", "万剑归宗"
     ];
     return skills.map((name, i) => {
-        // Power 线性增长：从 2 到 100
         const power = 2 + (98 * i / 19);
         const baseCost = 100 * Math.pow(5, i);
         return { 
@@ -624,6 +600,30 @@ const THUNDER_LORE = [
     { range: [100, 100], name: "混沌灭世雷", color: "#ff0000", shadow: "#ff0000" } // 终极红
 ];
 
+// --- 100种抵挡理由 ---
+const TRIB_LOGS = [
+    "祭出本命飞剑，硬抗天雷", "运转护体金光，毫发无损", "扔出一件下品法宝替死", "大喝一声，震散雷云", "使用「龟壳神功」缩头硬顶",
+    "献祭了隔壁老王的头发", "吞下一把回春丹，强行恢复", "天道手滑，打歪了", "躲在石缝里瑟瑟发抖", "肉身成圣，直接硬吃",
+    "抛出「避雷针」法宝", "念动真言，以攻对攻", "召唤护山神兽挡刀", "使用身法「移形换影」闪避", "天雷太弱，只觉酥麻",
+    "燃烧十年寿元抵挡", "使用符箓「金刚符」", "大喊「我是主角」企图开挂", "掏出「平底锅」法宝拍散天雷", "使用水系法术导电入地",
+    "全靠运气硬撑", "祭出师尊给的保命玉符", "天雷看你长得帅，威力减半", "使用「吸星大法」吸收雷电", "躲进虚空裂缝暂避",
+    "扔出前女友送的定情信物", "以剑引雷，淬炼剑意", "使用土系法术凝聚护盾", "天道打了个喷嚏，雷散了", "使用「替身草人」挡灾",
+    "肉身泛起金光，万法不侵", "祭出「翻天印」硬撼天威", "使用「风神腿」跑得比雷快", "天雷击中避雷塔", "使用「斗转星移」反弹伤害",
+    "咬破舌尖，喷出一口精血", "使用「乾坤大挪移」转移雷电", "躲在富婆道侣身后", "天雷突然卡顿了一下", "使用「金钟罩」护体",
+    "祭出「五火七禽扇」扇飞雷火", "大喊「莫欺少年穷」", "使用「缩地成寸」避开核心", "天道似乎在放水", "祭出「混元珍珠伞」",
+    "使用「化血神刀」劈开雷霆", "躲入地底三千尺", "使用「法天象地」变大硬抗", "天雷击中旁边的倒霉鬼", "使用「太极拳」化解雷劲",
+    "祭出「番天印」砸向雷劫", "使用「九字真言」护身", "大喊「我要逆天」", "使用「隐身术」藏匿气息", "天雷威力不足，如同挠痒",
+    "祭出「阴阳镜」反射雷光", "使用「三头六臂」全方位防御", "躲在祖传龟壳里", "天道不想杀生，雷声大雨点小", "使用「血盾术」",
+    "祭出「定海神珠」", "使用「纵地金光」", "大喊「我命由我不由天」", "使用「五行大遁」", "天雷击中你的发型，变成爆炸头",
+    "祭出「斩仙飞刀」", "使用「八九玄功」变化躲避", "躲在系统空间里", "天道去喝茶了，自动托管", "使用「不灭金身」",
+    "祭出「太极图」", "使用「袖里乾坤」收了天雷", "大喊「三十年河东」", "使用「一气化三清」分担伤害", "天雷被你的霸气震慑",
+    "祭出「盘古幡」", "使用「诛仙剑阵」绞碎雷劫", "躲在因果线之外", "天道给你点了个赞", "使用「大预言术」说雷没了",
+    "祭出「东皇钟」", "使用「掌中佛国」", "大喊「键来！」", "使用「言出法随」", "天雷也是有尊严的，不屑打你",
+    "祭出「炼妖壶」", "使用「吞天魔功」吞噬雷劫", "躲在作者的设定里", "天道网卡了", "使用「无敌风火轮」",
+    "祭出「昊天塔」", "使用「七十二变」", "大喊「这不科学」", "使用「如来神掌」", "天雷表示累了，歇会儿",
+    "祭出「女娲石」", "使用「补天术」", "躲在代码注释里", "天道判定你由于太帅无法被击中", "最后一道，全靠信念支撑！"
+];
+
 // --- 精选3道心魔问答 ---
 const TRIB_QUESTIONS = [
     {
@@ -675,18 +675,15 @@ const game = {
 
     getClickPower() {
         const base = Math.pow(this.data.realmIdx + 1, 3) * this.data.layer;
-        
         let skillMult = 1;
         this.data.skills.forEach(s => {
             if(s.level > 0) {
                 skillMult *= (1 + s.power * s.level);
             }
         });
-
         const rootMult = CONFIG.ROOTS[this.data.rootIdx].mult;
         const weaponMult = CONFIG.WEAPONS[this.data.weaponIdx].mult;
         const holdMult = this.hold.currentMult * this.hold.critMult;
-
         return base * skillMult * rootMult * weaponMult * holdMult;
     },
 
@@ -726,7 +723,6 @@ const game = {
             if(!passUpgraded) break;
             attempts++;
         }
-        
         if(upgraded) {
             ui.log("一键升级完成", "var(--neon-blue)");
             ui.renderSkills();
@@ -861,8 +857,8 @@ const game = {
     startTribulation() {
         this.data.isTribulating = true;
         document.getElementById('tribulation-overlay').classList.remove('hidden');
-        document.getElementById('modal-trib-fail').classList.add('hidden'); // 确保失败弹窗关闭
-        document.getElementById('question-overlay').classList.add('hidden'); // 确保问题弹窗关闭
+        document.getElementById('modal-trib-fail').classList.add('hidden');
+        document.getElementById('question-overlay').classList.add('hidden');
         
         // 重置UI
         document.getElementById('trib-console').innerHTML = '';
@@ -870,7 +866,7 @@ const game = {
         document.getElementById('trib-hp-text').innerText = '100%';
         document.getElementById('trib-step').innerText = '准备抗劫';
         document.getElementById('trib-step').style.color = 'white';
-        document.getElementById('thunder-vfx').style.animation = 'none'; // 重置雷电动画
+        document.getElementById('thunder-vfx').style.animation = 'none'; 
         
         this.runTribulation();
     },
@@ -948,7 +944,6 @@ const game = {
     async runTribulation() {
         const consoleEl = document.getElementById('trib-console');
         const thunderEl = document.getElementById('thunder-vfx');
-        const overlay = document.getElementById('tribulation-overlay');
         const countDisp = document.getElementById('trib-step');
         
         const logTrib = (idx, name, result, color) => {
@@ -985,8 +980,6 @@ const game = {
             thunderEl.offsetHeight; 
             thunderEl.style.animation = 'strike 0.15s ease-out';
             
-            // overlay.style.backgroundColor ... (移除全屏闪烁)
-
             const difficulty = i * 0.95; 
             const baseChance = 100 - difficulty; 
             const finalChance = baseChance + playerProtection;
@@ -1002,9 +995,10 @@ const game = {
                 break;
             } else {
                 hp = Math.max(1, hp - (Math.random() * 2));
-                msg = "成功抵御";
-                if(i === 99) msg = "肉身濒临崩溃，咬牙坚持！";
-                if(i === 100) msg = "大道金光护体，万法不侵！";
+                
+                // 使用100条花式语录
+                const logIndex = (i - 1) % TRIB_LOGS.length;
+                msg = TRIB_LOGS[logIndex];
                 
                 logTrib(i, lore.name, {success:true, msg:msg}, lore.color);
             }
@@ -1012,10 +1006,10 @@ const game = {
             document.getElementById('trib-hp-bar').style.width = hp + '%';
             document.getElementById('trib-hp-text').innerText = Math.floor(hp) + '%';
 
-            // --- 节奏控制 ---
-            let delay = 500; 
-            if (i >= 80) delay = 1000; 
-            if (i >= 96) delay = 2000; 
+            // --- 节奏控制优化 ---
+            let delay = 500; // 默认 0.5s
+            if (i >= 80) delay = 1000; // 80-95道：1s
+            if (i >= 96) delay = 2000; // 最后5道：2s
 
             await this.sleep(delay);
         }
@@ -1026,9 +1020,8 @@ const game = {
             // 进入心魔问答环节
             await this.runHeartDemonPhase();
         } else {
-            consoleEl.innerHTML += `<div style="color:#ff0000; font-size:1.2rem; margin-top:20px; font-weight:bold;">道消身殒...</div>`;
-            await this.sleep(1500);
-            this.handleDeath();
+            // 渡劫失败（没血了）
+            this.handleTribFail("肉身无法承受天威，崩解离析！");
         }
     },
 
@@ -1056,19 +1049,8 @@ const game = {
     },
 
     handleDeath() {
-        this.data.isTribulating = false;
-        document.getElementById('tribulation-overlay').classList.add('hidden');
-        const modal = document.getElementById('modal-end');
-        const modalBox = document.getElementById('modal-end-box');
-        modal.classList.remove('hidden');
-        modal.classList.remove('victory-mode');
-        modalBox.classList.remove('victory-box');
-
-        modalBox.innerHTML = `
-            <h1 id="end-title" style="color: #ff3b30; margin-top:0;">陨落</h1>
-            <p id="end-desc" style="color:#bbb; margin:20px 0;">天威难测，道友 ${this.data.name} 不幸陨落在天劫之下。<br>请重新来过。</p>
-            <button class="cultivate-btn-lg active" onclick="game.reincarnate()">转世重修</button>
-        `;
+        // 废弃，仅作为兜底
+        this.handleTribFail("不明原因陨落");
     },
 
     reincarnate() {
@@ -1101,7 +1083,7 @@ const ui = {
             game.hold.active = true;
             game.hold.startTime = Date.now();
             game.hold.lastCritTime = 0; 
-            game.hold.critMult = 1; // 重置暴击倍率
+            game.hold.critMult = 1; 
 
             document.getElementById('avatar').classList.add('channeling');
             document.getElementById('channel-container').classList.add('active');
@@ -1133,7 +1115,7 @@ const ui = {
         document.addEventListener('mouseup', end);
         document.addEventListener('touchend', end);
         
-        // 拖拽逻辑同前
+        // 拖拽逻辑
         const ball = document.getElementById('float-spirit');
         let isDragging = false;
         let startX, startY, initialLeft, initialTop;
@@ -1153,17 +1135,14 @@ const ui = {
         const now = Date.now();
         const diff = (now - game.hold.startTime) / 1000; 
         
-        // --- 核心逻辑1：极致亮度 ---
         const core = document.querySelector('.energy-core');
         const maxScaleTime = 5.0; 
         const progress = Math.min(diff, maxScaleTime) / maxScaleTime;
         const currentScale = 1 + (progress * 1.5); 
-        // 阴影范围扩大到 200px 模拟超级亮
         const currentGlow = 20 + (progress * 180); 
         
         if(core) {
             core.style.transform = `scale(${currentScale})`;
-            // 多重阴影叠加：白核 -> 亮蓝 -> 深蓝
             core.style.boxShadow = `
                 0 0 ${currentGlow * 0.5}px #fff,
                 0 0 ${currentGlow}px var(--neon-blue),
@@ -1171,22 +1150,18 @@ const ui = {
             `;
         }
 
-        // --- 核心逻辑2：5秒判定暴击 ---
         const checkPoint = Math.floor(diff / 5);
         if (checkPoint > game.hold.lastCritTime && diff >= 5) {
             game.hold.lastCritTime = checkPoint;
-            // 90% 概率触发 5倍暴击
             if (Math.random() < 0.9) {
                 game.hold.critMult *= 5;
                 this.showCritText();
             }
         }
 
-        // --- 基础倍率逻辑 ---
         const index = Math.floor(diff / 5);
         game.hold.currentMult = (index + 1) * 10;
         
-        // 总倍率
         const totalMult = game.hold.currentMult * game.hold.critMult;
 
         const percent = ((diff % 5) / 5) * 100;
@@ -1197,7 +1172,6 @@ const ui = {
              channelText.innerHTML = `吟唱 ${diff.toFixed(1)}s <span style="color:#ffeb3b; margin-left:10px;">x${this.fmt(totalMult)}倍</span>`;
         }
 
-        // --- 生成粒子 ---
         if(Math.random() > 0.4) this.spawnGatherParticle();
     },
 
