@@ -851,11 +851,10 @@ const game = {
             document.getElementById('trib-hp-bar').style.width = hp + '%';
             document.getElementById('trib-hp-text').innerText = Math.floor(hp) + '%';
 
-            let delay = 60; 
-            if (i > 80) delay = 150; 
-            if (i > 90) delay = 300; 
-            if (i > 95) delay = 600; 
-            if (i === 99) delay = 1500; 
+            // --- 节奏控制 (慢速版) ---
+            let delay = 1000;  // 默认 1秒 (前30道)
+            if (i >= 30) delay = 2000; // 30-80道：2秒
+            if (i >= 80) delay = 3000; // 80道以后：3秒
 
             await this.sleep(delay);
         }
