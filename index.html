@@ -79,7 +79,7 @@
         }
         #click-area:active { background: rgba(255, 255, 255, 0.03); }
 
-        /* --- 新版灵气特效 Avatar --- */
+        /* --- 灵气特效 Avatar --- */
         .avatar-container {
             width: 200px; height: 200px; 
             display: flex; justify-content: center; align-items: center;
@@ -93,6 +93,9 @@
             box-shadow: 0 0 30px var(--primary-gold), 0 0 60px var(--primary-gold);
             animation: corePulse 3s infinite ease-in-out;
             z-index: 5; position: relative;
+            /* 关键：增加过渡效果，让JS改变大小时更平滑 */
+            transition: transform 0.1s linear, box-shadow 0.1s linear, background 0.2s;
+            will-change: transform, box-shadow;
         }
         
         /* 闲置时的金色涟漪 */
@@ -112,29 +115,38 @@
             100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; border-width: 1px;}
         }
         
-        /* 旋转光环 */
+        /* 旋转光环 - 基础状态 */
         .energy-ring {
             position: absolute; border-radius: 50%;
             border: 1px solid rgba(255, 215, 0, 0.3);
             box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
         .ring-1 { width: 100px; height: 100px; border-top-color: var(--primary-gold); animation: spin 8s linear infinite; }
         .ring-2 { width: 140px; height: 140px; border-bottom-color: var(--primary-gold); animation: spin 12s linear infinite reverse; }
         .ring-3 { width: 190px; height: 190px; border: 1px dashed rgba(255, 255, 255, 0.1); animation: spin 20s linear infinite; }
 
-        /* 汇聚状态 (长按) */
+        /* === 汇聚状态 (长按) 核心样式修改 === */
+        
+        /* 1. 核心: 移除CSS动画，交由JS控制大小和发光，颜色变蓝 */
         .avatar-container.channeling .energy-core { 
-            animation: corePulse 0.4s infinite ease-in-out; 
-            box-shadow: 0 0 50px var(--neon-blue), 0 0 100px var(--neon-blue); 
-            background: #e0ffff; 
+            animation: none; /* 停止呼吸动画，防止冲突 */
+            background: #e0ffff; /* 核心变白蓝 */
         }
         .avatar-container.channeling .energy-core::after { display: none; }
-        .avatar-container.channeling .energy-ring { border-color: rgba(0, 242, 255, 0.7); border-width: 2px; }
-        .avatar-container.channeling .ring-1 { animation: spin 1s linear infinite; }
-        .avatar-container.channeling .ring-2 { animation: spin 1.5s linear infinite reverse; }
+        
+        /* 2. 光环: 变亮蓝，加速旋转 */
+        .avatar-container.channeling .energy-ring { 
+            border-color: rgba(0, 242, 255, 0.9); 
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
+            border-width: 2px; 
+        }
+        .avatar-container.channeling .ring-1 { animation: spin 1s linear infinite; border-top-color: #fff; }
+        .avatar-container.channeling .ring-2 { animation: spin 1.5s linear infinite reverse; border-bottom-color: var(--neon-blue); }
         .avatar-container.channeling .ring-3 { 
             border-style: solid; border-color: rgba(0, 242, 255, 0.3); 
-            animation: spin 3s linear infinite; width: 180px; height: 180px;
+            width: 180px; height: 180px;
+            animation: spin 3s linear infinite; 
         }
 
         .realm-badge {
@@ -258,26 +270,36 @@
             100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } 
         }
 
-        /* --- 增强版：汇聚灵气光点特效 (萤火虫效果) --- */
+        /* --- 增强版：汇聚灵气光点特效 (大而慢) --- */
         .spirit-particle {
             position: fixed;
-            width: 3px; height: 3px; /* 变小 */
-            background: #fff; /* 极亮的核心 */
+            width: 6px; height: 6px; /* 更大的粒子 */
+            background: #fff; 
             border-radius: 50%;
-            /* 萤火虫效果: 核心极亮，周围有紧密的蓝色荧光光晕 */
+            /* 强烈的蓝色光晕 */
             box-shadow: 
-                0 0 4px #fff, /* 白色的核心光晕，增加亮度感 */
-                0 0 8px var(--neon-blue), /* 紧密的蓝色荧光 */
-                0 0 15px var(--neon-blue), /* 稍远的光晕 */
-                -2px -2px 10px rgba(0, 242, 255, 0.5); /* 缩短、减弱的尾巴 */
+                0 0 8px #fff,
+                0 0 16px var(--neon-blue),
+                0 0 32px var(--neon-blue);
             pointer-events: none;
-            animation: spiritGather 0.5s ease-in forwards; z-index: 9999;
-            will-change: transform, opacity;
+            /* 速度变慢: 1.5s */
+            animation: spiritGather 1.5s ease-in forwards; 
+            z-index: 9999;
+            will-change: transform, opacity, top, left;
         }
         @keyframes spiritGather {
-            0% { top: var(--sy); left: var(--sx); opacity: 0; transform: scale(0.5); }
-            20% { opacity: 1; }
-            100% { top: var(--ey); left: var(--ex); opacity: 0; transform: scale(3); }
+            0% { 
+                top: var(--sy); left: var(--sx); 
+                opacity: 0; 
+                transform: scale(0.2); 
+            }
+            10% { opacity: 1; transform: scale(1); }
+            80% { opacity: 1; transform: scale(1); }
+            100% { 
+                top: var(--ey); left: var(--ex); 
+                opacity: 0; 
+                transform: scale(0.5); /* 钻入核心变小 */
+            }
         }
 
         #tribulation-overlay {
@@ -658,7 +680,6 @@ const game = {
         return false;
     },
 
-    // 灵根升级：30%概率，20次保底
     upgradeRoot() {
         if(this.data.rootIdx >= CONFIG.ROOTS.length - 1) return;
         const next = CONFIG.ROOTS[this.data.rootIdx + 1];
@@ -683,7 +704,6 @@ const game = {
         }
     },
 
-    // 法宝升级：30%概率，20次保底
     upgradeWeapon() {
         if(this.data.weaponIdx >= CONFIG.WEAPONS.length - 1) return;
         const next = CONFIG.WEAPONS[this.data.weaponIdx + 1];
@@ -708,7 +728,6 @@ const game = {
         }
     },
 
-    // 境界突破：70%概率，5次保底，失败掉级
     upgradeRealm() {
         const nextReq = this.getNextRealmReq();
         if(this.data.spirit >= nextReq) {
@@ -903,7 +922,16 @@ const ui = {
             game.hold.active = false;
             clearInterval(game.hold.timer);
             game.hold.currentMult = 1; 
-            document.getElementById('avatar').classList.remove('channeling');
+            
+            // 移除 Channeling
+            const avatar = document.getElementById('avatar');
+            avatar.classList.remove('channeling');
+            
+            // 重置核心样式
+            const core = avatar.querySelector('.energy-core');
+            core.style.transform = 'scale(1)';
+            core.style.boxShadow = '';
+
             document.getElementById('channel-container').classList.remove('active');
             document.getElementById('channel-text').classList.remove('active');
             document.getElementById('channel-text').innerHTML = '长按 <span style="color:var(--neon-blue)">汇聚灵气</span>';
@@ -985,36 +1013,47 @@ const ui = {
     updateHoldStatus() {
         const now = Date.now();
         const diff = (now - game.hold.startTime) / 1000; 
+        
+        // --- 核心逻辑：随时间变大变亮 ---
+        const core = document.querySelector('.energy-core');
+        const maxScaleTime = 5.0; // 5秒达到最大效果
+        const progress = Math.min(diff, maxScaleTime) / maxScaleTime;
+        
+        const currentScale = 1 + (progress * 1.5); // 1.0 -> 2.5
+        const currentGlow = 20 + (progress * 80);  // 光晕 20px -> 100px
+        
+        if(core) {
+            core.style.transform = `scale(${currentScale})`;
+            core.style.boxShadow = `0 0 ${currentGlow}px var(--neon-blue), 0 0 ${currentGlow * 2}px #fff`;
+        }
+
+        // --- 倍率逻辑 ---
         const index = Math.floor(diff / 5);
         game.hold.currentMult = (index + 1) * 10;
         const percent = ((diff % 5) / 5) * 100;
         document.getElementById('channel-fill').style.width = percent + '%';
-        document.getElementById('channel-text').innerHTML = `吟唱 ${diff.toFixed(1)}s <span style="color:#ffeb3b; margin-left:10px;">x${game.hold.currentMult}倍</span>`;
         
-        // --- 增强版：生成汇聚粒子 (数量极大增加，随倍率指数增长) ---
-        // 基础数量 3，每增加一个倍率等级，额外增加 index*2 个，实现“足够多”
-        const baseCount = 3;
-        const extraCount = index * 2;
-        const totalToSpawn = baseCount + extraCount;
+        const channelText = document.getElementById('channel-text');
+        if(channelText) {
+             channelText.innerHTML = `吟唱 ${diff.toFixed(1)}s <span style="color:#ffeb3b; margin-left:10px;">x${game.hold.currentMult}倍</span>`;
+        }
 
-        for(let i=0; i<totalToSpawn; i++) {
-            // 加入一点随机性，不是每帧都生成满额，避免过于卡顿，但视觉上足够密集
-            if(Math.random() > 0.2) {
-                this.spawnGatherParticle();
-            }
+        // --- 生成粒子 (稍慢) ---
+        if(Math.random() > 0.4) {
+            this.spawnGatherParticle();
         }
     },
 
-    // 汇聚特效：从屏幕随机位置飞向 Avatar 中心
     spawnGatherParticle() {
         const avatar = document.getElementById('avatar');
+        if(!avatar) return;
         const rect = avatar.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
 
         const angle = Math.random() * Math.PI * 2;
-        // 半径稍微扩大，让粒子从屏幕外飞入的感觉更强
-        const radius = Math.max(window.innerWidth, window.innerHeight) * 0.8;
+        // 半径稍微扩大，让粒子从屏幕外飞入
+        const radius = Math.max(window.innerWidth, window.innerHeight) * 0.6;
         const startX = window.innerWidth/2 + Math.cos(angle) * radius;
         const startY = window.innerHeight/2 + Math.sin(angle) * radius;
 
@@ -1026,22 +1065,19 @@ const ui = {
         p.style.setProperty('--ey', centerY + 'px');
         
         document.body.appendChild(p);
-        // 动画时间稍微缩短，增加速度感
-        setTimeout(() => p.remove(), 500);
+        setTimeout(() => p.remove(), 1500); // 对应 CSS 1.5s
     },
 
     createVictoryParticles() {
         const container = document.getElementById('victory-particles');
         if(!container) return;
-        container.innerHTML = ''; // 清空旧的
-        for (let i = 0; i < 50; i++) { // 生成50个金色粒子
+        container.innerHTML = ''; 
+        for (let i = 0; i < 50; i++) { 
             const p = document.createElement('div');
             p.className = 'victory-particle';
             p.style.left = Math.random() * 100 + '%';
-            // 随机大小
             const size = Math.random() * 6 + 2 + 'px';
             p.style.width = size; p.style.height = size;
-            // 随机动画延迟和时长
             p.style.animationDelay = Math.random() * 2 + 's';
             p.style.animationDuration = Math.random() * 3 + 2 + 's';
             container.appendChild(p);
