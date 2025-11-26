@@ -44,9 +44,8 @@
             background: radial-gradient(circle at center, rgba(30,30,40,0.3) 0%, rgba(0,0,0,1) 100%);
         }
 
-        /* --- 顶部信息栏 (iOS 深度适配) --- */
+        /* --- 顶部信息栏 --- */
         header {
-            /* 核心修改：大幅增加顶部安全距离，适配灵动岛 */
             padding-top: max(50px, env(safe-area-inset-top));
             padding-bottom: 15px; 
             padding-left: 20px; 
@@ -58,11 +57,6 @@
             z-index: 50;
         }
         
-        .header-top-row {
-            display: flex; justify-content: space-between; width: 100%; align-items: flex-end; margin-bottom: 5px;
-        }
-
-        /* 灵力值特大显示 */
         .spirit-container { text-align: center; width: 100%; margin-bottom: 8px; }
         .spirit-label { font-size: 0.7rem; color: #666; margin-bottom: 2px; }
         .spirit-val { 
@@ -118,14 +112,19 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
         
-        .tabs { display: flex; background: rgba(0,0,0,0.5); }
+        .tabs { display: flex; background: rgba(0,0,0,0.5); flex-shrink: 0; }
         .tab-btn {
             flex: 1; padding: 12px; background: transparent; border: none; color: var(--text-dim);
             border-bottom: 2px solid transparent; font-size: 0.9rem; cursor: pointer; touch-action: manipulation;
         }
         .tab-btn.active { color: var(--primary-gold); border-bottom-color: var(--primary-gold); background: rgba(255, 215, 0, 0.05); }
 
-        .tab-content { flex: 1; overflow-y: auto; padding: 10px; display: none; -webkit-overflow-scrolling: touch; }
+        /* 关键修改：增加 padding-bottom 防止底部内容被遮挡 */
+        .tab-content { 
+            flex: 1; overflow-y: auto; padding: 10px; 
+            padding-bottom: 80px; /* 增加底部留白 */
+            display: none; -webkit-overflow-scrolling: touch; 
+        }
         .tab-content.show { display: block; }
 
         .list-item {
@@ -151,7 +150,7 @@
         }
         .cultivate-btn-lg:active { transform: scale(0.98); }
         .cultivate-btn-lg.active { background: var(--primary-green); color: #000; }
-        .cultivate-btn-lg.active.risk { background: linear-gradient(45deg, #ff9800, #ff5722); color: white; } /* 60%概率按钮色 */
+        .cultivate-btn-lg.active.risk { background: linear-gradient(45deg, #ff9800, #ff5722); color: white; }
         .cultivate-btn-lg.trib { 
             background: linear-gradient(45deg, #d32f2f, #b71c1c); color: #fff; animation: pulse 1.5s infinite; 
         }
@@ -191,6 +190,18 @@
         input { background: #333; border: 1px solid #555; color: white; padding: 10px; margin: 15px 0; width: 90%; text-align: center; }
         
         .pity-tag { font-size: 0.7rem; padding: 2px 6px; background: #333; border-radius: 4px; color: #aaa; }
+
+        /* 一键升级按钮样式 */
+        .header-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px; padding: 0 5px;
+        }
+        .btn-onekey {
+            background: linear-gradient(90deg, #2196f3, #00bcd4); color: white; border: none;
+            padding: 5px 15px; border-radius: 15px; font-size: 0.8rem; font-weight: bold;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.4); cursor: pointer;
+        }
+        .btn-onekey:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -240,8 +251,9 @@
             </div>
 
             <div id="tab-skills" class="tab-content show">
-                <div style="font-size:0.75rem;color:#666;text-align:center;margin-bottom:10px;">
-                    长按升级 · 满级解锁<span style="color:#e91e63">至臻</span> · 全至臻+满灵根+满法宝必过天劫
+                <div class="header-actions">
+                    <span style="font-size:0.75rem;color:#666;">至臻·功法可抵御天劫</span>
+                    <button class="btn-onekey" onclick="game.upgradeAllSkills()">⚡ 一键升级</button>
                 </div>
                 <div id="skills-list"></div>
             </div>
@@ -257,7 +269,7 @@
                     <button id="btn-realm" class="cultivate-btn-lg" onclick="game.upgradeRealm()">突破瓶颈</button>
                     <button id="btn-trib" class="cultivate-btn-lg trib hidden" onclick="game.startTribulation()">逆天改命 (百雷天劫)</button>
                     <div id="trib-warn" class="hidden" style="color:#ff3b30; font-size:0.7rem; margin-top:5px; line-height:1.4;">
-                        需【全功法至臻】+【灵根绝世】+【法宝至臻】<br>方可 100% 成功，否则 50% 概率陨落。
+                        雷劫威力随次数递增 (100% -> 99% -> ...)<br>需提升功法、灵根、法宝以增加护体值！
                     </div>
                 </div>
 
@@ -307,8 +319,11 @@
         <div class="thunder-bolt" id="thunder-vfx"></div>
         <div style="z-index: 2002; text-align: center; width: 85%;">
             <h1 style="color: #ffeb3b; text-shadow: 0 0 20px red;">天劫降临</h1>
-            <h2 id="trib-step" style="color: white; font-family: monospace; font-size:2rem;">0 / 100</h2>
-            <div id="trib-console" style="height: 120px; overflow-y: scroll; background: rgba(0,0,0,0.6); border: 1px solid #444; padding: 10px; font-size: 0.8rem; text-align: left; margin-top: 20px;"></div>
+            <h2 id="trib-step" style="color: white; font-family: monospace; font-size:1.5rem; margin:10px 0;">准备抗劫</h2>
+            <div style="width:100%; background:#333; height:10px; border-radius:5px; margin-bottom:10px; overflow:hidden;">
+                <div id="trib-hp-bar" style="width:100%; height:100%; background:linear-gradient(90deg, #4caf50, #8bc34a);"></div>
+            </div>
+            <div id="trib-console" style="height: 150px; overflow-y: scroll; background: rgba(0,0,0,0.6); border: 1px solid #444; padding: 10px; font-size: 0.75rem; text-align: left;"></div>
         </div>
     </div>
 
@@ -392,7 +407,6 @@ const game = {
         skills: CONFIG.SKILLS.map(s => ({...s, level: 0})),
         reincarnationCount: 0,
         isTribulating: false,
-        // 保底计数器
         rootFails: 0,
         weaponFails: 0
     },
@@ -439,7 +453,36 @@ const game = {
         ui.updateSpirit();
     },
 
-    // --- 升级逻辑 (含概率) ---
+    // --- 一键升级功能 ---
+    upgradeAllSkills() {
+        let upgraded = false;
+        let attempts = 0;
+        // 简单循环尝试升级，防止卡死最多循环50次遍历
+        while(attempts < 50) {
+            let passUpgraded = false;
+            this.data.skills.forEach(s => {
+                const cost = s.cost * Math.pow(1.6, s.level);
+                if(s.level < 100 && this.data.spirit >= cost) {
+                    this.data.spirit -= cost;
+                    s.level++;
+                    passUpgraded = true;
+                    upgraded = true;
+                }
+            });
+            if(!passUpgraded) break; // 如果一轮下来一个都没升，就退出
+            attempts++;
+        }
+        
+        if(upgraded) {
+            ui.log("一键升级完成", "var(--neon-blue)");
+            ui.renderSkills();
+            ui.renderCultivate(); // 刷新修炼界面的天劫提示状态
+            ui.updateSpirit();
+        } else {
+            ui.log("灵力不足，无法升级任何功法", "#666");
+        }
+    },
+
     upgradeSkill(idx) {
         const s = this.data.skills[idx];
         const cost = s.cost * Math.pow(1.6, s.level);
@@ -451,46 +494,37 @@ const game = {
         return false;
     },
 
-    // 升级灵根：60%概率，10保底
     upgradeRoot() {
         if(this.data.rootIdx >= CONFIG.ROOTS.length - 1) return;
         const next = CONFIG.ROOTS[this.data.rootIdx + 1];
-        
         if(this.data.spirit >= next.cost) {
             this.data.spirit -= next.cost;
-            
-            // 判定成功：概率60% 或 保底>=9
             const success = (Math.random() < 0.6) || (this.data.rootFails >= 9);
-            
             if(success) {
                 this.data.rootIdx++;
                 this.data.rootFails = 0;
                 ui.log(`洗髓成功！灵根进阶为 [${next.name}]！`, 'neon-blue');
             } else {
                 this.data.rootFails++;
-                ui.log(`洗髓失败，灵气逸散... (当前保底: ${this.data.rootFails}/10)`, '#ff5722');
+                ui.log(`洗髓失败... (保底: ${this.data.rootFails}/10)`, '#ff5722');
             }
             ui.render();
         }
     },
 
-    // 升级武器：60%概率，10保底
     upgradeWeapon() {
         if(this.data.weaponIdx >= CONFIG.WEAPONS.length - 1) return;
         const next = CONFIG.WEAPONS[this.data.weaponIdx + 1];
-        
         if(this.data.spirit >= next.cost) {
             this.data.spirit -= next.cost;
-            
             const success = (Math.random() < 0.6) || (this.data.weaponFails >= 9);
-            
             if(success) {
                 this.data.weaponIdx++;
                 this.data.weaponFails = 0;
                 ui.log(`祭炼成功！法宝晋升为 [${next.name}]！`, 'rare-purple');
             } else {
                 this.data.weaponFails++;
-                ui.log(`祭炼失败，材料损毁... (当前保底: ${this.data.weaponFails}/10)`, '#ff5722');
+                ui.log(`祭炼失败... (保底: ${this.data.weaponFails}/10)`, '#ff5722');
             }
             ui.render();
         }
@@ -519,12 +553,12 @@ const game = {
         return major.baseReq * Math.pow(this.data.layer, major.exp);
     },
 
-    // --- 渡劫 ---
+    // --- 渡劫新逻辑 ---
     startTribulation() {
         this.data.isTribulating = true;
         document.getElementById('tribulation-overlay').classList.remove('hidden');
-        document.getElementById('tribulation-overlay').classList.remove('xinmo-mode');
         document.getElementById('trib-console').innerHTML = '';
+        document.getElementById('trib-hp-bar').style.width = '100%';
         this.runTribulation();
     },
 
@@ -534,47 +568,62 @@ const game = {
             d.innerHTML += `<div style="color:${c}">${m}</div>`;
             d.scrollTop = d.scrollHeight;
         };
-
         const thunder = document.getElementById('thunder-vfx');
         const countDisp = document.getElementById('trib-step');
         
-        // 判定条件：功法全满 + 灵根满 + 武器满
+        // 计算玩家护体值 (Max 100)
+        // 功法占比 50分, 灵根 25分, 武器 25分
         const totalSkills = this.data.skills.length;
         const maxedSkills = this.data.skills.filter(s => s.level >= 100).length;
-        const isRootMax = this.data.rootIdx >= CONFIG.ROOTS.length - 1;
-        const isWeaponMax = this.data.weaponIdx >= CONFIG.WEAPONS.length - 1;
-
-        let rate = 0.5;
+        const skillScore = (maxedSkills / totalSkills) * 50;
         
-        if (maxedSkills === totalSkills && isRootMax && isWeaponMax) {
-            rate = 1.1; 
-            log("检测到：全功法至臻、灵根绝世、法宝通神...", "#ffd700");
-            log("天道避让，此劫必过！", "#ffd700");
-        } else {
-            log("根基未臻圆满，生死天定 (成功率 50%)...", "#ff9800");
-            if(maxedSkills < totalSkills) log(`- 功法未全至臻 (${maxedSkills}/${totalSkills})`, "#888");
-            if(!isRootMax) log(`- 灵根未达绝世`, "#888");
-            if(!isWeaponMax) log(`- 法宝未达神器`, "#888");
-        }
+        const rootProgress = this.data.rootIdx / (CONFIG.ROOTS.length - 1);
+        const rootScore = rootProgress * 25;
+        
+        const weaponProgress = this.data.weaponIdx / (CONFIG.WEAPONS.length - 1);
+        const weaponScore = weaponProgress * 25;
+        
+        const playerProtection = skillScore + rootScore + weaponScore; // 0 ~ 100
+        
+        log(`护体神光强度: ${playerProtection.toFixed(1)}/100`, "#00f2ff");
 
+        let survived = true;
+        
         for(let i=1; i<=100; i++) {
-            countDisp.innerText = `${i} / 100 道`;
-            await this.sleep(40);
+            countDisp.innerText = `${i} / 100 道雷劫`;
+            
+            // 核心逻辑：第 i 道雷的通过率
+            // 第1道: 难度0，通过率 = 100% + 护体
+            // 第100道: 难度99，基础通过率 1% + 护体
+            const difficulty = i - 1; 
+            const baseChance = 100 - difficulty; 
+            const finalChance = baseChance + playerProtection;
+            
+            // 随机数 0-100
+            const roll = Math.random() * 100;
+            
+            // 视觉效果
             thunder.classList.add('thunder-strike');
-            setTimeout(()=>thunder.classList.remove('thunder-strike'), 20);
+            setTimeout(()=>thunder.classList.remove('thunder-strike'), 30);
+            
+            if (roll > finalChance) {
+                log(`第 ${i} 道天雷击穿护体！(难度:${difficulty}%, 护体:${playerProtection.toFixed(0)}%)`, "#ff3b30");
+                survived = false;
+                break; // 死亡
+            } else {
+                if(i % 10 === 0) log(`抗下第 ${i} 道天雷... (安全余量: ${(finalChance - roll).toFixed(1)}%)`, "#888");
+            }
+            
+            document.getElementById('trib-hp-bar').style.width = (100 - i) + '%';
+            await this.sleep(40);
         }
 
-        await this.sleep(500);
-        document.getElementById('tribulation-overlay').classList.add('xinmo-mode');
-        log("心魔劫降临...", "#ff3b30");
-        await this.sleep(1500);
-
-        if(Math.random() < rate) {
-            log("渡劫成功，飞升仙界！", "#4caf50");
+        if(survived) {
+            log("肉身成圣，天道降福！", "#4caf50");
             await this.sleep(1000);
             this.handleWin();
         } else {
-            log("渡劫失败，身死道消！", "#ff0000");
+            log("魂飞魄散...", "#ff0000");
             await this.sleep(1000);
             this.handleDeath();
         }
@@ -597,7 +646,7 @@ const game = {
         document.getElementById('modal-end').classList.remove('hidden');
         document.getElementById('end-title').innerText = "道消身死";
         document.getElementById('end-title').style.color = "#ff3b30";
-        document.getElementById('end-desc').innerText = "修仙路漫漫，请重新来过。";
+        document.getElementById('end-desc').innerText = "天威难测，请重新来过。";
     },
 
     reincarnate() {
@@ -844,7 +893,7 @@ const ui = {
             document.getElementById('root-bonus').innerText = `+${((nextR.mult-1)*100).toFixed(0)}%`;
             document.getElementById('req-root').innerText = this.fmt(nextR.cost);
             if(game.data.spirit >= nextR.cost) {
-                btnRoot.className = "cultivate-btn-lg active risk"; // 橙色风险按钮
+                btnRoot.className = "cultivate-btn-lg active risk";
                 btnRoot.innerText = "洗髓伐骨 (60%)";
             } else {
                 btnRoot.className = "cultivate-btn-lg";
