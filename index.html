@@ -45,29 +45,44 @@
             background: radial-gradient(circle at center, rgba(20,20,30,0.5) 0%, rgba(0,0,0,1) 100%);
         }
 
-        /* --- 上半部：核心点击区 --- */
+        /* --- 上半部：核心点击区 (布局调整) --- */
         #click-area {
-            height: 38%; 
+            height: 40%; 
             position: relative; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; cursor: pointer;
+            justify-content: flex-end; /* 内容靠下，接近手指 */
+            align-items: center; cursor: pointer;
             transition: background 0.2s; touch-action: manipulation;
-            padding-bottom: 20px; /* 给底部留点空间 */
+            padding-bottom: 30px; 
         }
         #click-area:active { background: rgba(255, 255, 255, 0.03); }
 
+        /* 灵力显示 - 居中置顶 */
+        .spirit-display-area {
+            position: absolute; top: 10%; width: 100%; text-align: center;
+            pointer-events: none;
+        }
+        .spirit-label-xs { font-size: 0.7rem; color: #666; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+        .spirit-val-main { 
+            font-family: 'Courier New', monospace; 
+            font-size: 2.5rem; color: var(--primary-green); font-weight: 800; 
+            text-shadow: 0 0 20px rgba(0, 230, 118, 0.3);
+            line-height: 1;
+        }
+
+        /* 头像 - 居中 */
         .avatar-container {
-            width: 130px; height: 130px; border-radius: 50%;
+            width: 140px; height: 140px; border-radius: 50%;
             border: 2px solid #444;
             display: flex; justify-content: center; align-items: center;
             position: relative; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             background: radial-gradient(circle, #2a2a2a, #050505);
-            box-shadow: 0 0 25px rgba(0,0,0,0.8); z-index: 20;
-            margin-bottom: 20px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.6); z-index: 20;
+            margin-bottom: 25px;
         }
         .avatar-container.channeling {
             border-color: var(--neon-blue); box-shadow: 0 0 60px var(--neon-blue); transform: scale(1.05);
         }
-        .meditate-icon { font-size: 3.5rem; transition: transform 0.1s; }
+        .meditate-icon { font-size: 4rem; transition: transform 0.1s; }
 
         .realm-badge {
             position: absolute; bottom: -14px;
@@ -77,36 +92,16 @@
             box-shadow: 0 0 15px rgba(255, 193, 7, 0.2); white-space: nowrap;
         }
 
-        /* 进度条 */
-        .channel-bar { margin-bottom: 15px; width: 60%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; position: relative; opacity: 0; }
+        /* 进度条与文字 - 居中 */
+        .channel-container-wrapper {
+            width: 70%; display: flex; flex-direction: column; align-items: center; height: 40px; justify-content: center;
+        }
+        .channel-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; opacity: 0; margin-bottom: 8px;}
         .channel-bar.active { opacity: 1; }
-        .channel-fill { height: 100%; background: var(--neon-blue); width: 0%; border-radius: 2px; box-shadow: 0 0 10px var(--neon-blue); }
-        .channel-info { 
-            position: absolute; top: -20px; width: 100%; text-align: center;
-            font-size: 0.8rem; color: var(--neon-blue); height: 16px; opacity: 0.9; text-shadow: 0 0 5px black;
-        }
-
-        /* --- 新增：操作状态栏 (胶囊) --- */
-        .status-pill {
-            width: 85%;
-            background: rgba(30, 30, 30, 0.8);
-            border: 1px solid #333;
-            border-radius: 40px;
-            padding: 10px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            backdrop-filter: blur(5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        .status-left { font-size: 0.8rem; color: #888; display: flex; align-items: center; }
-        .status-right { text-align: right; }
+        .channel-fill { height: 100%; background: var(--neon-blue); width: 0%; border-radius: 3px; box-shadow: 0 0 10px var(--neon-blue); }
         
-        .spirit-label-xs { font-size: 0.65rem; color: #555; display: block; line-height: 1; margin-bottom: 2px;}
-        .spirit-val-pill { 
-            font-family: 'Courier New', monospace; 
-            font-size: 1.4rem; color: var(--primary-green); font-weight: 800; 
-            text-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
-            line-height: 1;
-        }
+        .hint-text { color: #555; font-size: 0.8rem; transition: color 0.2s; }
+        .hint-text.active { color: var(--neon-blue); font-weight: bold; text-shadow: 0 0 5px var(--neon-blue); }
 
         /* --- 下半部：大面板 --- */
         #panel-container { 
@@ -199,7 +194,6 @@
             animation: floatUp 0.8s forwards; font-size: 1.4rem; text-shadow: 2px 2px 0 #000; z-index: 100;
         }
 
-        /* 隐藏保底显示 */
         .pity-tag { display: none !important; }
 
         #tribulation-overlay {
@@ -237,25 +231,21 @@
 
     <div id="app">
         <div id="click-area">
+            <div class="spirit-display-area">
+                <div class="spirit-label-xs">天地灵力</div>
+                <div class="spirit-val-main" id="spirit-disp">0</div>
+            </div>
+
             <div class="avatar-container" id="avatar">
                 <div class="meditate-icon">🧘‍♂️</div>
                 <div class="realm-badge" id="realm-disp">炼气期 一层</div>
             </div>
             
-            <div id="channel-container" class="channel-bar">
-                <div class="channel-info" id="channel-text"></div>
-                <div class="channel-fill" id="channel-fill"></div>
-            </div>
-
-            <div class="status-pill">
-                <div class="status-left">
-                    <span style="font-size:1.2rem; margin-right:8px;">👆</span>
-                    <div>长按<br><span style="color:var(--neon-blue)">汇聚灵气</span></div>
+            <div class="channel-container-wrapper">
+                <div id="channel-container" class="channel-bar">
+                    <div class="channel-fill" id="channel-fill"></div>
                 </div>
-                <div class="status-right">
-                    <span class="spirit-label-xs">当前灵力</span>
-                    <span class="spirit-val-pill" id="spirit-disp">0</span>
-                </div>
+                <div class="hint-text" id="channel-text">长按 <span style="color:var(--neon-blue)">汇聚灵气</span></div>
             </div>
         </div>
 
@@ -736,6 +726,7 @@ const ui = {
             game.hold.startTime = Date.now();
             document.getElementById('avatar').classList.add('channeling');
             document.getElementById('channel-container').classList.add('active');
+            document.getElementById('channel-text').classList.add('active');
             game.hold.timer = setInterval(() => { this.updateHoldStatus(); game.processClick(null); }, 100);
         };
         const end = () => {
@@ -745,7 +736,8 @@ const ui = {
             game.hold.currentMult = 1; 
             document.getElementById('avatar').classList.remove('channeling');
             document.getElementById('channel-container').classList.remove('active');
-            document.getElementById('channel-text').innerText = '';
+            document.getElementById('channel-text').classList.remove('active');
+            document.getElementById('channel-text').innerHTML = '长按 <span style="color:var(--neon-blue)">汇聚灵气</span>';
             document.getElementById('channel-fill').style.width = '0%';
         };
 
