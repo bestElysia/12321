@@ -11,15 +11,12 @@
         :root {
             --bg-color: #050505;
             --panel-bg: #111;
-            --card-bg: rgba(30, 30, 40, 0.6);
-            --primary-gold: #ffc107;
+            --primary-gold: #ffd700;
             --primary-green: #00e676;
-            --danger-red: #ff3b30;
             --neon-blue: #00f2ff;
             --rare-purple: #d500f9;
             --god-tier: #ff0055;
             --text-main: #f0f0f0;
-            --text-dim: #888;
             --border-color: #333;
         }
 
@@ -38,7 +35,7 @@
         }
 
         .bg-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-
+        
         /* 特效层 */
         #vfx-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
@@ -49,13 +46,11 @@
             position: relative; z-index: 10; width: 100%; max-width: 600px; height: 100%;
             display: flex; flex-direction: column;
             background: radial-gradient(circle at center, rgba(20,20,30,0.5) 0%, rgba(0,0,0,1) 100%);
-            transition: transform 0.1s; /* 用于震动效果 */
         }
 
         /* --- 悬浮灵力球 --- */
         #float-spirit {
-            position: fixed;
-            top: 15%; right: 0; z-index: 9999;
+            position: fixed; top: 15%; right: 0; z-index: 9999;
             background: rgba(20, 20, 20, 0.9);
             border: 1px solid var(--primary-green);
             border-radius: 20px 0 0 20px; border-right: none;
@@ -84,28 +79,49 @@
         }
         #click-area:active { background: rgba(255, 255, 255, 0.03); }
 
+        /* --- 新版灵气特效 Avatar --- */
         .avatar-container {
-            width: 140px; height: 140px; border-radius: 50%;
-            border: 2px solid #444;
+            width: 160px; height: 160px; 
             display: flex; justify-content: center; align-items: center;
-            position: relative; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background: radial-gradient(circle, #2a2a2a, #050505);
-            box-shadow: 0 0 30px rgba(0,0,0,0.6); z-index: 20;
-            margin-bottom: 25px;
+            position: relative; margin-bottom: 25px;
+            z-index: 20;
         }
-        .avatar-container.channeling {
-            border-color: var(--neon-blue); box-shadow: 0 0 60px var(--neon-blue); transform: scale(1.05);
+
+        /* 灵能核心 */
+        .energy-core {
+            width: 40px; height: 40px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 30px var(--primary-gold), 0 0 60px var(--primary-gold);
+            animation: corePulse 3s infinite ease-in-out;
+            z-index: 5; position: relative;
         }
-        .meditate-icon { font-size: 4rem; transition: transform 0.1s; }
+        
+        /* 旋转光环 */
+        .energy-ring {
+            position: absolute; border-radius: 50%;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
+        }
+        .ring-1 { width: 100px; height: 100px; border-top-color: var(--primary-gold); animation: spin 8s linear infinite; }
+        .ring-2 { width: 140px; height: 140px; border-bottom-color: var(--primary-gold); animation: spin 12s linear infinite reverse; }
+
+        /* 汇聚状态 */
+        .avatar-container.channeling .energy-core { animation: corePulse 0.5s infinite ease-in-out; box-shadow: 0 0 50px var(--neon-blue), 0 0 80px var(--neon-blue); background: #ccffff; }
+        .avatar-container.channeling .energy-ring { border-color: rgba(0, 242, 255, 0.6); border-width: 2px; }
+        .avatar-container.channeling .ring-1 { animation: spin 1s linear infinite; }
+        .avatar-container.channeling .ring-2 { animation: spin 1.5s linear infinite reverse; }
 
         .realm-badge {
-            position: absolute; bottom: -14px;
-            background: linear-gradient(90deg, #000, #333, #000);
+            position: absolute; bottom: -20px;
+            background: linear-gradient(90deg, #000, #222, #000);
             border: 1px solid var(--primary-gold); color: var(--primary-gold);
             padding: 4px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold;
-            box-shadow: 0 0 15px rgba(255, 193, 7, 0.2); white-space: nowrap;
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.3); white-space: nowrap; z-index: 10;
         }
 
+        @keyframes corePulse { 0%, 100% { transform: scale(0.9); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 进度条 */
         .channel-container-wrapper { width: 70%; display: flex; flex-direction: column; align-items: center; height: 40px; justify-content: center; }
         .channel-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; opacity: 0; margin-bottom: 8px;}
         .channel-bar.active { opacity: 1; }
@@ -135,6 +151,7 @@
         .tab-content { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 80px; display: none; -webkit-overflow-scrolling: touch; }
         .tab-content.show { display: block; animation: fadeIn 0.3s; }
 
+        /* Dashboard */
         .dashboard-card {
             background: linear-gradient(135deg, #222, #1a1a1a);
             border: 1px solid #333; border-radius: 12px;
@@ -181,8 +198,7 @@
         .cultivate-btn-lg {
             width: 100%; padding: 14px; border: none; font-size: 1rem; font-weight: bold; border-radius: 8px; 
             margin-top: 8px; cursor: pointer; touch-action: manipulation;
-            background: #222; color: #888;
-            transition: all 0.1s;
+            background: #222; color: #888; transition: all 0.1s;
         }
         .cultivate-btn-lg:active { transform: scale(0.97); }
         .cultivate-btn-lg.active { background: var(--primary-green); color: #000; box-shadow: 0 4px 0 #00b359; }
@@ -203,9 +219,9 @@
             animation: floatUp 0.8s forwards; font-size: 1.4rem; text-shadow: 2px 2px 0 #000; z-index: 100;
         }
 
+        /* 强制隐藏保底和概率 */
         .pity-tag { display: none !important; }
 
-        /* 特效动画 */
         .particle {
             position: absolute; width: 6px; height: 6px; border-radius: 50%;
             pointer-events: none; opacity: 1;
@@ -214,12 +230,6 @@
             0% { transform: translate(0, 0) scale(1); opacity: 1; } 
             100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } 
         }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-        .shake-anim { animation: shake 0.4s; }
 
         #tribulation-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -263,7 +273,9 @@
     <div id="app">
         <div id="click-area">
             <div class="avatar-container" id="avatar">
-                <div class="meditate-icon">🧘‍♂️</div>
+                <div class="energy-core"></div>
+                <div class="energy-ring ring-1"></div>
+                <div class="energy-ring ring-2"></div>
                 <div class="realm-badge" id="realm-disp">炼气期 一层</div>
             </div>
             
@@ -308,7 +320,7 @@
             <div id="tab-cultivate" class="tab-content">
                 <div class="cultivate-section">
                     <div class="cultivate-header">
-                        <span>境界突破 <span style="font-size:0.7rem; color:#888;">(70%)</span></span>
+                        <span>境界突破</span>
                         <span id="next-realm-name" style="color:var(--primary-gold)">炼气期 二层</span>
                     </div>
                     <div style="font-size:0.8rem; color:#666; margin-bottom:8px;">所需灵力: <span id="req-realm" style="color:#fff">100</span></div>
@@ -327,26 +339,26 @@
 
                 <div class="cultivate-section">
                     <div class="cultivate-header">
-                        <span>淬炼灵根 <span style="font-size:0.7rem; color:#888;">(30%)</span></span>
+                        <span>淬炼灵根</span>
                     </div>
                     <div style="font-size:0.8rem; color:#666; margin-bottom:5px; display:flex; justify-content:space-between;">
                         <span>下阶: <span id="next-root-name" style="color:var(--neon-blue)">下品灵根</span></span>
                         <span id="root-bonus" style="color:var(--primary-green)"></span>
                     </div>
                     <div style="font-size:0.8rem; color:#666;">消耗: <span id="req-root" style="color:#fff">500</span></div>
-                    <button id="btn-root" class="cultivate-btn-lg" onclick="game.upgradeRoot()">洗髓伐骨 (赌!)</button>
+                    <button id="btn-root" class="cultivate-btn-lg" onclick="game.upgradeRoot()">洗髓伐骨</button>
                 </div>
 
                 <div class="cultivate-section" style="border:none;">
                     <div class="cultivate-header">
-                        <span>祭炼法宝 <span style="font-size:0.7rem; color:#888;">(30%)</span></span>
+                        <span>祭炼法宝</span>
                     </div>
                     <div style="font-size:0.8rem; color:#666; margin-bottom:5px; display:flex; justify-content:space-between;">
                         <span>下阶: <span id="next-weapon-name" style="color:var(--rare-purple)">木剑</span></span>
                         <span id="weapon-bonus" style="color:var(--primary-green)"></span>
                     </div>
                     <div style="font-size:0.8rem; color:#666;">消耗: <span id="req-weapon" style="color:#fff">1,000</span></div>
-                    <button id="btn-weapon" class="cultivate-btn-lg" onclick="game.upgradeWeapon()">祭炼法宝 (赌!)</button>
+                    <button id="btn-weapon" class="cultivate-btn-lg" onclick="game.upgradeWeapon()">祭炼法宝</button>
                 </div>
             </div>
 
@@ -567,7 +579,7 @@ const game = {
                 ui.log(`洗髓成功！灵根进阶为 [${next.name}]！`, 'var(--primary-green)');
             } else {
                 this.data.rootFails++;
-                ui.shakeApp();
+                ui.createExplosion(rect.left + rect.width/2, rect.top + rect.height/2, '#ff3b30'); // 失败也有特效(红色)
                 ui.log(`洗髓失败，气血翻涌...`, '#ff3b30');
             }
             ui.render();
@@ -592,7 +604,7 @@ const game = {
                 ui.log(`祭炼成功！法宝晋升为 [${next.name}]！`, 'var(--rare-purple)');
             } else {
                 this.data.weaponFails++;
-                ui.shakeApp();
+                ui.createExplosion(rect.left + rect.width/2, rect.top + rect.height/2, '#ff3b30');
                 ui.log(`祭炼失败，灵材损毁...`, '#ff3b30');
             }
             ui.render();
@@ -607,7 +619,6 @@ const game = {
             const btn = document.getElementById('btn-realm');
             const rect = btn.getBoundingClientRect();
             
-            // 保底5次
             const success = (Math.random() < 0.7) || (this.data.realmFails >= 4);
             
             if(success) {
@@ -625,14 +636,13 @@ const game = {
                 }
             } else {
                 this.data.realmFails++;
-                // 掉级惩罚 (最少掉到1层)
+                ui.createExplosion(rect.left + rect.width/2, rect.top + rect.height/2, '#ff3b30');
                 if(this.data.layer > 1) {
                     this.data.layer--;
                     ui.log("突破失败，境界跌落至" + this.data.layer + "层!", "#ff3b30");
                 } else {
                     ui.log("突破失败，根基不稳!", "#ff3b30");
                 }
-                ui.shakeApp();
             }
             ui.render();
         }
@@ -865,7 +875,8 @@ const ui = {
         document.getElementById('channel-text').innerHTML = `吟唱 ${diff.toFixed(1)}s <span style="color:#ffeb3b; margin-left:10px;">x${game.hold.currentMult}倍</span>`;
         if(index >= 1) {
             const shake = Math.random() * (index * 1.5);
-            document.getElementById('avatar').style.transform = `scale(1.05) translate(${shake}px, ${shake}px)`;
+            // 粒子汇聚特效
+            ui.bgParticle(window.innerWidth/2, window.innerHeight*0.3); 
         }
     },
 
@@ -932,7 +943,6 @@ const ui = {
         setTimeout(()=> ctx.clearRect(0,0,canvas.width,canvas.height), 150);
     },
 
-    // --- 特效系统 ---
     createExplosion(x, y, color) {
         const container = document.getElementById('vfx-layer');
         for (let i = 0; i < 20; i++) {
@@ -954,13 +964,6 @@ const ui = {
             container.appendChild(p);
             setTimeout(() => p.remove(), 600);
         }
-    },
-
-    shakeApp() {
-        const app = document.getElementById('app');
-        app.classList.remove('shake-anim');
-        void app.offsetWidth; // trigger reflow
-        app.classList.add('shake-anim');
     },
 
     render() {
@@ -1008,7 +1011,9 @@ const ui = {
                         <div style="font-weight:bold; color:${isMax?'var(--primary-gold)':'#eee'}; font-size:0.9rem;">
                             ${displayName} <span style="font-size:0.75rem; color:#666; margin-left:5px;">Lv.${s.level}</span>
                         </div>
-                        <div style="font-size:0.7rem; color:#555; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:2px;">${s.desc}</div>
+                        <div style="font-size:0.7rem; color:#555; margin-top:2px;">
+                            效能: <span style="color:${isMax?'var(--primary-gold)':'var(--neon-blue)'}">x${s.power.toFixed(2)}</span> / 级
+                        </div>
                     </div>
                     <button class="btn-upgrade ${isMax?'maxed':''}" ${canBuy?'':'disabled'} 
                         onmousedown="ui.startSkillHold(${i})" onmouseup="ui.endSkillHold()" onmouseleave="ui.endSkillHold()"
