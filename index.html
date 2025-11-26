@@ -81,15 +81,15 @@
 
         /* --- 新版灵气特效 Avatar --- */
         .avatar-container {
-            width: 160px; height: 160px; 
+            width: 200px; height: 200px; 
             display: flex; justify-content: center; align-items: center;
-            position: relative; margin-bottom: 25px;
+            position: relative; margin-bottom: 15px;
             z-index: 20;
         }
 
         /* 灵能核心 */
         .energy-core {
-            width: 40px; height: 40px; background: #fff; border-radius: 50%;
+            width: 46px; height: 46px; background: #fff; border-radius: 50%;
             box-shadow: 0 0 30px var(--primary-gold), 0 0 60px var(--primary-gold);
             animation: corePulse 3s infinite ease-in-out;
             z-index: 5; position: relative;
@@ -99,26 +99,42 @@
         .energy-ring {
             position: absolute; border-radius: 50%;
             border: 1px solid rgba(255, 215, 0, 0.3);
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
         }
         .ring-1 { width: 100px; height: 100px; border-top-color: var(--primary-gold); animation: spin 8s linear infinite; }
         .ring-2 { width: 140px; height: 140px; border-bottom-color: var(--primary-gold); animation: spin 12s linear infinite reverse; }
+        
+        /* 第三道光环：虚线，更大 */
+        .ring-3 { 
+            width: 190px; height: 190px; 
+            border: 1px dashed rgba(255, 255, 255, 0.1); 
+            animation: spin 20s linear infinite; 
+        }
 
-        /* 汇聚状态 */
-        .avatar-container.channeling .energy-core { animation: corePulse 0.5s infinite ease-in-out; box-shadow: 0 0 50px var(--neon-blue), 0 0 80px var(--neon-blue); background: #ccffff; }
-        .avatar-container.channeling .energy-ring { border-color: rgba(0, 242, 255, 0.6); border-width: 2px; }
+        /* 汇聚状态 (长按) */
+        .avatar-container.channeling .energy-core { 
+            animation: corePulse 0.4s infinite ease-in-out; 
+            box-shadow: 0 0 50px var(--neon-blue), 0 0 100px var(--neon-blue); 
+            background: #ccffff; 
+        }
+        .avatar-container.channeling .energy-ring { border-color: rgba(0, 242, 255, 0.7); border-width: 2px; }
         .avatar-container.channeling .ring-1 { animation: spin 1s linear infinite; }
         .avatar-container.channeling .ring-2 { animation: spin 1.5s linear infinite reverse; }
+        .avatar-container.channeling .ring-3 { 
+            border-style: solid; border-color: rgba(0, 242, 255, 0.3); 
+            animation: spin 3s linear infinite; 
+            width: 180px; height: 180px; /* 收缩一点 */
+        }
 
         .realm-badge {
-            position: absolute; bottom: -20px;
+            position: absolute; bottom: -10px;
             background: linear-gradient(90deg, #000, #222, #000);
             border: 1px solid var(--primary-gold); color: var(--primary-gold);
             padding: 4px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold;
             box-shadow: 0 0 15px rgba(255, 193, 7, 0.3); white-space: nowrap; z-index: 10;
         }
 
-        @keyframes corePulse { 0%, 100% { transform: scale(0.9); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+        @keyframes corePulse { 0%, 100% { transform: scale(0.9); opacity: 0.8; } 50% { transform: scale(1.15); opacity: 1; } }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* 进度条 */
@@ -222,6 +238,7 @@
         /* 强制隐藏保底和概率 */
         .pity-tag { display: none !important; }
 
+        /* 爆炸/升级特效 */
         .particle {
             position: absolute; width: 6px; height: 6px; border-radius: 50%;
             pointer-events: none; opacity: 1;
@@ -229,6 +246,18 @@
         @keyframes particleFly { 
             0% { transform: translate(0, 0) scale(1); opacity: 1; } 
             100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } 
+        }
+
+        /* 汇聚灵气光点特效 */
+        .spirit-particle {
+            position: fixed; width: 4px; height: 4px; background: var(--neon-blue); border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-blue); pointer-events: none;
+            animation: spiritGather 0.6s ease-in forwards; z-index: 9999;
+        }
+        @keyframes spiritGather {
+            0% { top: var(--sy); left: var(--sx); opacity: 0; transform: scale(0.5); }
+            10% { opacity: 1; }
+            100% { top: var(--ey); left: var(--ex); opacity: 0; transform: scale(1.5); }
         }
 
         #tribulation-overlay {
@@ -276,6 +305,7 @@
                 <div class="energy-core"></div>
                 <div class="energy-ring ring-1"></div>
                 <div class="energy-ring ring-2"></div>
+                <div class="energy-ring ring-3"></div>
                 <div class="realm-badge" id="realm-disp">炼气期 一层</div>
             </div>
             
@@ -579,7 +609,7 @@ const game = {
                 ui.log(`洗髓成功！灵根进阶为 [${next.name}]！`, 'var(--primary-green)');
             } else {
                 this.data.rootFails++;
-                ui.createExplosion(rect.left + rect.width/2, rect.top + rect.height/2, '#ff3b30'); // 失败也有特效(红色)
+                ui.createExplosion(rect.left + rect.width/2, rect.top + rect.height/2, '#ff3b30'); 
                 ui.log(`洗髓失败，气血翻涌...`, '#ff3b30');
             }
             ui.render();
@@ -798,7 +828,7 @@ const ui = {
         document.addEventListener('mouseup', end);
         document.addEventListener('touchend', end);
         
-        // --- 悬浮球拖拽逻辑 ---
+        // --- 悬浮球拖拽 ---
         const ball = document.getElementById('float-spirit');
         let isDragging = false;
         let startX, startY, initialLeft, initialTop;
@@ -873,11 +903,35 @@ const ui = {
         const percent = ((diff % 5) / 5) * 100;
         document.getElementById('channel-fill').style.width = percent + '%';
         document.getElementById('channel-text').innerHTML = `吟唱 ${diff.toFixed(1)}s <span style="color:#ffeb3b; margin-left:10px;">x${game.hold.currentMult}倍</span>`;
-        if(index >= 1) {
-            const shake = Math.random() * (index * 1.5);
-            // 粒子汇聚特效
-            ui.bgParticle(window.innerWidth/2, window.innerHeight*0.3); 
+        
+        // 生成汇聚粒子 (向中心飞)
+        if (Math.random() > 0.6) {
+            this.spawnGatherParticle();
         }
+    },
+
+    // 汇聚特效：从屏幕随机位置飞向 Avatar 中心
+    spawnGatherParticle() {
+        const avatar = document.getElementById('avatar');
+        const rect = avatar.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        // 随机起点 (以屏幕中心为圆心的较大半径圆上随机取点，或者屏幕边缘)
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.max(window.innerWidth, window.innerHeight) * 0.6;
+        const startX = window.innerWidth/2 + Math.cos(angle) * radius;
+        const startY = window.innerHeight/2 + Math.sin(angle) * radius;
+
+        const p = document.createElement('div');
+        p.className = 'spirit-particle';
+        p.style.setProperty('--sx', startX + 'px');
+        p.style.setProperty('--sy', startY + 'px');
+        p.style.setProperty('--ex', centerX + 'px');
+        p.style.setProperty('--ey', centerY + 'px');
+        
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 600);
     },
 
     startSkillHold(idx) {
