@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修仙模拟器 - 渡劫篇</title>
+    <style>
+        :root {
+            --primary-color: #00ff9d; /* 灵力绿 */
+            --danger-color: #ff4757;  /* 劫雷红 */
+            --bg-color: #1a1a2e;
+            --panel-bg: rgba(22, 33, 62, 0.95);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: #fff;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            background-image: radial-gradient(circle at center, #233458 0%, #0f0f1a 100%);
+        }
+
+        /* 游戏容器 */
+        #game-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 系统面板样式 */
+        .system-panel {
+            background: var(--panel-bg);
+            border: 2px solid #4a5568;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .panel-header {
+            text-align: center;
+            border-bottom: 1px solid #4a5568;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .stat-row {
+            margin: 8px 0;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stat-label { color: #a0aec0; }
+        .stat-value { color: #fff; font-weight: 500; text-align: right;}
+        .highlight { color: #ffd700; } /* 金色传说 */
+
+        /* 被动技能列表 */
+        .skills-box {
+            font-size: 0.85rem;
+            color: #cbd5e0;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        /* 剧情文本区域 */
+        #story-log {
+            height: 150px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-left: 3px solid var(--primary-color);
+            background: rgba(0,0,0,0.2);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .log-entry { margin-bottom: 8px; opacity: 0; animation: fadeIn 0.5s forwards; }
+        .log-system { color: var(--primary-color); }
+        .log-danger { color: var(--danger-color); font-weight: bold; }
+
+        /* 选项按钮 */
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            background: linear-gradient(90deg, #2d3748, #4a5568);
+            border: 1px solid #718096;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            background: linear-gradient(90deg, var(--primary-color), #2d3748);
+            color: #000;
+            border-color: var(--primary-color);
+            font-weight: bold;
+            transform: scale(1.02);
+        }
+
+        button:active { transform: scale(0.98); }
+
+        /* 动画定义 */
+        @keyframes fadeIn { to { opacity: 1; } }
+        
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        .shake-screen { animation: shake 0.5s; }
+
+        /* 雷劫闪光 */
+        #flash-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 99;
+            transition: opacity 0.1s;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="flash-overlay"></div>
+
+    <div id="game-container">
+        <div class="system-panel" id="main-panel">
+            <div class="panel-header">💠 天道系统 v9.9.9</div>
+            
+            <div class="stat-row">
+                <span class="stat-label">宿主</span>
+                <span class="stat-value highlight">张颖</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">剩余寿命</span>
+                <span class="stat-value">∞ 年</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">修为</span>
+                <span class="stat-value" style="color:var(--danger-color)">渡劫巅峰 (0/9999)</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">天赋</span>
+                <span class="stat-value">极品天灵根 | 绝世无双</span>
+            </div>
+            
+            <hr style="border-color: #2d3748; opacity: 0.5;">
+            
+            <div class="skills-box">
+                <div>⚔️ <strong>功法：</strong>真·碧水流云剑法、大衍龟息决...</div>
+                <div style="margin-top:5px;">🔮 <strong>秘术：</strong><span class="highlight">真·吃吃吃，我吃吃吃</span>（被动：永远不会长胖）</div>
+            </div>
+            
+            <div class="stat-row" style="margin-top:10px;">
+                <span class="stat-label">可支配点数</span>
+                <span class="stat-value">0</span>
+            </div>
+        </div>
+
+        <div id="story-log">
+            <div class="log-entry log-system">【系统】检测到宿主修为已达世界瓶颈。</div>
+            <div class="log-entry">经过不懈努力，你终于达到了渡劫巅峰...</div>
+            <div class="log-entry">九天神雷正在汇聚，世界壁垒出现裂痕。</div>
+            <div class="log-entry" style="color:yellow">是否开始渡劫？打破世界壁垒？</div>
+        </div>
+
+        <div class="choices" id="choice-box">
+            <button onclick="ascend('normal')">选项1：是</button>
+            <button onclick="ascend('english')">选项2：yes</button>
+            <button onclick="ascend('spanish')">选项3：si</button>
+        </div>
+    </div>
+
+    <script>
+        const logBox = document.getElementById('story-log');
+        const choiceBox = document.getElementById('choice-box');
+        const flashOverlay = document.getElementById('flash-overlay');
+        const gameContainer = document.getElementById('game-container');
+
+        // 添加日志函数
+        function addLog(text, styleClass = '') {
+            const div = document.createElement('div');
+            div.className = `log-entry ${styleClass}`;
+            div.innerHTML = text;
+            logBox.appendChild(div);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        // 闪光特效
+        function flash() {
+            flashOverlay.style.opacity = '0.8';
+            setTimeout(() => { flashOverlay.style.opacity = '0'; }, 100);
+        }
+
+        // 震动特效
+        function shake() {
+            document.body.classList.add('shake-screen');
+            setTimeout(() => { document.body.classList.remove('shake-screen'); }, 500);
+        }
+
+        // 渡劫逻辑
+        async function ascend(type) {
+            // 1. 禁用按钮，防止重复点击
+            const buttons = choiceBox.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            });
+
+            // 2. 玩家选择反馈
+            let confirmText = "你眼神坚定，选择了直面天道！";
+            if(type === 'english') confirmText = "你用外语向天道发出了挑战：YES！";
+            if(type === 'spanish') confirmText = "你展现了异域风情：Si！";
+            
+            addLog(`> ${confirmText}`);
+            await wait(1000);
+
+            // 3. 渡劫开始 - 第一道雷
+            addLog("⚡ 轰隆隆！第一道九霄神雷落下！", "log-danger");
+            flash();
+            shake();
+            await wait(1500);
+            
+            addLog("✨ 你的【超级大水球术】自动护主，毫发无伤。");
+            await wait(1500);
+
+            // 4. 第二道雷
+            addLog("⚡⚡ 劫云翻滚，紫宵神雷直击天灵盖！", "log-danger");
+            flash(); flash(); 
+            shake();
+            await wait(1500);
+
+            addLog("🛡️ 【真·碧水剑】发出嗡鸣，一剑斩断了雷霆！");
+            await wait(1500);
+
+            // 5. 心魔劫
+            addLog("👻 天魔乱舞，试图用美食诱惑你...", "log-danger");
+            await wait(2000);
+            addLog("🍗 触发天赋【真·吃吃吃】，你把心魔吃掉了。味道像炸鸡。", "log-system");
+            await wait(1500);
+
+            // 6. 飞升成功
+            flash();
+            document.body.style.backgroundImage = "radial-gradient(circle at center, #fff 0%, #ffd700 100%)"; // 变金光
+            document.body.style.color = "#000"; // 反色
+            
+            choiceBox.innerHTML = `<div style="text-align:center; padding:20px; font-weight:bold; color:black;">
+                <h1>飞升成功！</h1>
+                <p>恭喜宿主打破世界壁垒</p>
+                <button onclick="alert('敬请期待：仙界篇')" style="background:#000; color:#fff; margin-top:10px;">进入上界</button>
+            </div>`;
+
+            addLog("🚀 世界壁垒破碎！你化作一道流光冲向星海！", "log-system");
+            
+            // 更新面板状态
+            document.querySelector('.stat-value[style*="danger"]').innerText = "真仙境 (1/????)";
+            document.querySelector('.stat-value[style*="danger"]').style.color = "#000";
+        }
+
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>
