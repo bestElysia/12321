@@ -45,41 +45,24 @@
             background: radial-gradient(circle at center, rgba(20,20,30,0.5) 0%, rgba(0,0,0,1) 100%);
         }
 
-        /* --- 极简顶部灵力栏 --- */
-        .top-bar-minimal {
-            position: absolute; top: 0; left: 0; width: 100%;
-            padding-top: max(15px, env(safe-area-inset-top));
-            padding-bottom: 10px;
-            text-align: center;
-            z-index: 100;
-            pointer-events: none;
-        }
-        
-        .spirit-val-lg { 
-            font-family: 'Courier New', monospace; font-size: 2.2rem; 
-            color: var(--primary-green); font-weight: 800; 
-            text-shadow: 0 0 15px rgba(0, 230, 118, 0.4);
-            letter-spacing: 1px;
-        }
-        .spirit-label-sm { font-size: 0.7rem; color: rgba(255,255,255,0.5); letter-spacing: 4px; margin-bottom: -5px; }
-
         /* --- 上半部：核心点击区 --- */
         #click-area {
             height: 38%; 
             position: relative; display: flex; flex-direction: column;
             justify-content: center; align-items: center; cursor: pointer;
             transition: background 0.2s; touch-action: manipulation;
-            padding-top: 40px;
+            padding-bottom: 20px; /* 给底部留点空间 */
         }
         #click-area:active { background: rgba(255, 255, 255, 0.03); }
 
         .avatar-container {
-            width: 140px; height: 140px; border-radius: 50%;
+            width: 130px; height: 130px; border-radius: 50%;
             border: 2px solid #444;
             display: flex; justify-content: center; align-items: center;
             position: relative; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             background: radial-gradient(circle, #2a2a2a, #050505);
             box-shadow: 0 0 25px rgba(0,0,0,0.8); z-index: 20;
+            margin-bottom: 20px;
         }
         .avatar-container.channeling {
             border-color: var(--neon-blue); box-shadow: 0 0 60px var(--neon-blue); transform: scale(1.05);
@@ -94,10 +77,36 @@
             box-shadow: 0 0 15px rgba(255, 193, 7, 0.2); white-space: nowrap;
         }
 
-        .channel-bar { margin-top: 30px; width: 50%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; position: relative; opacity: 0; }
+        /* 进度条 */
+        .channel-bar { margin-bottom: 15px; width: 60%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; position: relative; opacity: 0; }
         .channel-bar.active { opacity: 1; }
         .channel-fill { height: 100%; background: var(--neon-blue); width: 0%; border-radius: 2px; box-shadow: 0 0 10px var(--neon-blue); }
-        .channel-info { margin-top: 8px; font-size: 0.8rem; color: var(--neon-blue); height: 16px; opacity: 0.8; }
+        .channel-info { 
+            position: absolute; top: -20px; width: 100%; text-align: center;
+            font-size: 0.8rem; color: var(--neon-blue); height: 16px; opacity: 0.9; text-shadow: 0 0 5px black;
+        }
+
+        /* --- 新增：操作状态栏 (胶囊) --- */
+        .status-pill {
+            width: 85%;
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid #333;
+            border-radius: 40px;
+            padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .status-left { font-size: 0.8rem; color: #888; display: flex; align-items: center; }
+        .status-right { text-align: right; }
+        
+        .spirit-label-xs { font-size: 0.65rem; color: #555; display: block; line-height: 1; margin-bottom: 2px;}
+        .spirit-val-pill { 
+            font-family: 'Courier New', monospace; 
+            font-size: 1.4rem; color: var(--primary-green); font-weight: 800; 
+            text-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
+            line-height: 1;
+        }
 
         /* --- 下半部：大面板 --- */
         #panel-container { 
@@ -143,7 +152,6 @@
         .dash-row { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 8px; }
         .dash-item { display: flex; flex-direction: column; }
         .dash-label { font-size: 0.7rem; color: #666; margin-bottom: 4px; }
-        .dash-val { font-size: 0.9rem; color: #ddd; font-weight: bold; }
         .tag-badge { 
             display: inline-block; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; 
             background: rgba(255,255,255,0.05); border: 1px solid #444; color: #aaa;
@@ -180,7 +188,6 @@
             background: #222; color: #888;
         }
         .cultivate-btn-lg.active { background: var(--primary-green); color: #000; }
-        /* 概率按钮统一颜色 */
         .cultivate-btn-lg.active.risk { background: linear-gradient(45deg, #ff9800, #ff5722); color: white; }
         .cultivate-btn-lg.trib { 
             background: linear-gradient(45deg, #d32f2f, #b71c1c); color: #fff; animation: pulse 1.5s infinite; 
@@ -229,11 +236,6 @@
     <canvas id="bgCanvas" class="bg-canvas"></canvas>
 
     <div id="app">
-        <div class="top-bar-minimal">
-            <div class="spirit-label-sm">天地灵力</div>
-            <div class="spirit-val-lg" id="spirit-disp">0</div>
-        </div>
-
         <div id="click-area">
             <div class="avatar-container" id="avatar">
                 <div class="meditate-icon">🧘‍♂️</div>
@@ -241,13 +243,20 @@
             </div>
             
             <div id="channel-container" class="channel-bar">
+                <div class="channel-info" id="channel-text"></div>
                 <div class="channel-fill" id="channel-fill"></div>
             </div>
-            <div class="channel-info" id="channel-text"></div>
-            
-            <p style="margin-top: 15px; color: #555; font-size: 0.75rem;">
-                长按 <span style="color:var(--neon-blue)">汇聚灵气</span>
-            </p>
+
+            <div class="status-pill">
+                <div class="status-left">
+                    <span style="font-size:1.2rem; margin-right:8px;">👆</span>
+                    <div>长按<br><span style="color:var(--neon-blue)">汇聚灵气</span></div>
+                </div>
+                <div class="status-right">
+                    <span class="spirit-label-xs">当前灵力</span>
+                    <span class="spirit-val-pill" id="spirit-disp">0</span>
+                </div>
+            </div>
         </div>
 
         <div id="panel-container">
@@ -370,7 +379,6 @@
     </div>
 
 <script>
-// --- 配置：指数级倍率 ---
 const CONFIG = {
     MAJOR_REALMS: [
         { name: "炼气期", baseReq: 100, exp: 1.5 },     
@@ -916,7 +924,7 @@ const ui = {
                 btnT.classList.add('hidden');
                 tribWarn.classList.add('hidden');
                 if(game.data.spirit >= nextReq) {
-                    btnU.className = "cultivate-btn-lg active risk"; // 境界现在也有风险
+                    btnU.className = "cultivate-btn-lg active risk"; 
                     btnU.innerText = "突破瓶颈 (80%)";
                 } else {
                     btnU.className = "cultivate-btn-lg";
