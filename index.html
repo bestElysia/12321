@@ -258,16 +258,18 @@
             100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } 
         }
 
-        /* --- 增强版：汇聚灵气光点特效 (更蓝、更亮、带尾巴) --- */
+        /* --- 增强版：汇聚灵气光点特效 (萤火虫效果) --- */
         .spirit-particle {
-            position: fixed; width: 5px; height: 5px; background: #fff; border-radius: 50%;
-            /* 核心是这个 box-shadow，多层叠加制造强烈发光和拖尾效果 */
+            position: fixed;
+            width: 3px; height: 3px; /* 变小 */
+            background: #fff; /* 极亮的核心 */
+            border-radius: 50%;
+            /* 萤火虫效果: 核心极亮，周围有紧密的蓝色荧光光晕 */
             box-shadow: 
-                0 0 8px var(--neon-blue),
-                0 0 16px var(--neon-blue),
-                0 0 30px var(--neon-blue),
-                -3px -3px 15px rgba(0, 242, 255, 0.7), /* 尾巴1 */
-                -6px -6px 25px rgba(0, 242, 255, 0.4); /* 尾巴2 */
+                0 0 4px #fff, /* 白色的核心光晕，增加亮度感 */
+                0 0 8px var(--neon-blue), /* 紧密的蓝色荧光 */
+                0 0 15px var(--neon-blue), /* 稍远的光晕 */
+                -2px -2px 10px rgba(0, 242, 255, 0.5); /* 缩短、减弱的尾巴 */
             pointer-events: none;
             animation: spiritGather 0.5s ease-in forwards; z-index: 9999;
             will-change: transform, opacity;
