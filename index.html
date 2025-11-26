@@ -36,7 +36,6 @@
 
         .bg-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
         
-        /* 特效层 */
         #vfx-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             z-index: 9000; pointer-events: none; overflow: hidden;
@@ -77,14 +76,22 @@
             justify-content: flex-end; align-items: center; cursor: pointer;
             transition: background 0.2s; touch-action: manipulation; padding-bottom: 30px; 
         }
-        #click-area:active { background: rgba(255, 255, 255, 0.03); }
 
-        /* --- 灵气特效 Avatar --- */
+        /* --- Avatar 容器 --- */
         .avatar-container {
             width: 200px; height: 200px; 
             display: flex; justify-content: center; align-items: center;
             position: relative; margin-bottom: 15px;
             z-index: 20;
+        }
+
+        /* 散发光晕 (Aura) - 默认隐藏 */
+        .core-aura {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 50px; height: 50px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(0,242,255,0.2) 60%, transparent 80%);
+            opacity: 0; pointer-events: none; z-index: 4;
+            transition: opacity 0.5s;
         }
 
         /* 灵能核心 */
@@ -93,29 +100,23 @@
             box-shadow: 0 0 30px var(--primary-gold), 0 0 60px var(--primary-gold);
             animation: corePulse 3s infinite ease-in-out;
             z-index: 5; position: relative;
-            /* 关键：增加过渡效果，让JS改变大小时更平滑 */
+            /* 关键：增加过渡效果 */
             transition: transform 0.1s linear, box-shadow 0.1s linear, background 0.2s;
             will-change: transform, box-shadow;
         }
         
-        /* 闲置时的金色涟漪 */
         .avatar-container:not(.channeling) .energy-core::after {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 215, 0, 0.6);
+            content: ''; position: absolute; top: 50%; left: 50%; width: 100%; height: 100%;
+            border-radius: 50%; border: 2px solid rgba(255, 215, 0, 0.6);
             transform: translate(-50%, -50%) scale(0.8);
-            animation: rippleAnim 2s infinite linear;
-            opacity: 0;
+            animation: rippleAnim 2s infinite linear; opacity: 0;
         }
         @keyframes rippleAnim {
             0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.8; border-width: 4px;}
             100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; border-width: 1px;}
         }
         
-        /* 旋转光环 - 基础状态 */
+        /* 旋转光环 */
         .energy-ring {
             position: absolute; border-radius: 50%;
             border: 1px solid rgba(255, 215, 0, 0.3);
@@ -128,14 +129,24 @@
 
         /* === 汇聚状态 (长按) 核心样式修改 === */
         
-        /* 1. 核心: 移除CSS动画，交由JS控制大小和发光，颜色变蓝 */
+        /* 1. 核心: 变大、超级亮 */
         .avatar-container.channeling .energy-core { 
-            animation: none; /* 停止呼吸动画，防止冲突 */
-            background: #e0ffff; /* 核心变白蓝 */
+            animation: none; 
+            background: #fff; /* 纯白核心 */
         }
         .avatar-container.channeling .energy-core::after { display: none; }
         
-        /* 2. 光环: 变亮蓝，加速旋转 */
+        /* 2. 开启光晕扩散动画 */
+        .avatar-container.channeling .core-aura {
+            opacity: 1;
+            animation: auraPulse 1s infinite ease-out;
+        }
+        @keyframes auraPulse {
+            0% { width: 50px; height: 50px; opacity: 0.8; }
+            100% { width: 250px; height: 250px; opacity: 0; }
+        }
+
+        /* 3. 光环: 亮蓝，加速 */
         .avatar-container.channeling .energy-ring { 
             border-color: rgba(0, 242, 255, 0.9); 
             box-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
@@ -168,14 +179,13 @@
         .hint-text { color: #555; font-size: 0.8rem; transition: color 0.2s; }
         .hint-text.active { color: var(--neon-blue); font-weight: bold; text-shadow: 0 0 5px var(--neon-blue); }
 
-        /* --- 下半部：面板 --- */
+        /* 面板样式 */
         #panel-container { 
             flex: 1; background: var(--panel-bg); 
             border-top: 1px solid #222; border-radius: 20px 20px 0 0;
             display: flex; flex-direction: column;
             box-shadow: 0 -5px 30px rgba(0,0,0,0.8); overflow: hidden;
         }
-        
         .tabs { display: flex; background: rgba(0,0,0,0.3); border-bottom: 1px solid #222; padding: 0 10px; }
         .tab-btn {
             flex: 1; padding: 15px 0; background: transparent; border: none; color: #666;
@@ -186,15 +196,13 @@
             content: ''; position: absolute; bottom: 0; left: 25%; width: 50%; height: 3px; 
             background: var(--primary-gold); border-radius: 3px 3px 0 0; box-shadow: 0 -2px 10px rgba(255, 193, 7, 0.5);
         }
-
         .tab-content { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 80px; display: none; -webkit-overflow-scrolling: touch; }
         .tab-content.show { display: block; animation: fadeIn 0.3s; }
 
         /* Dashboard */
         .dashboard-card {
             background: linear-gradient(135deg, #222, #1a1a1a);
-            border: 1px solid #333; border-radius: 12px;
-            padding: 15px; margin-bottom: 20px;
+            border: 1px solid #333; border-radius: 12px; padding: 15px; margin-bottom: 20px;
             display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
@@ -212,20 +220,16 @@
         .btn-onekey {
             background: linear-gradient(90deg, #2196f3, #00e5ff); color: #000; border: none;
             padding: 8px 20px; border-radius: 20px; font-size: 0.85rem; font-weight: 800;
-            box-shadow: 0 0 15px rgba(33, 150, 243, 0.4); cursor: pointer;
-            transition: transform 0.1s;
+            box-shadow: 0 0 15px rgba(33, 150, 243, 0.4); cursor: pointer; transition: transform 0.1s;
         }
         .btn-onekey:active { transform: scale(0.95); }
 
         .list-item {
-            background: #181818; border: 1px solid #2a2a2a;
-            padding: 12px; margin-bottom: 8px; border-radius: 8px;
+            background: #181818; border: 1px solid #2a2a2a; padding: 12px; margin-bottom: 8px; border-radius: 8px;
             display: flex; justify-content: space-between; align-items: center;
         }
-        
         .btn-upgrade {
-            min-width: 80px; text-align: center;
-            background: transparent; border: 1px solid var(--primary-green); color: var(--primary-green);
+            min-width: 80px; text-align: center; background: transparent; border: 1px solid var(--primary-green); color: var(--primary-green);
             padding: 6px 0; border-radius: 6px; font-size: 0.8rem; cursor: pointer;
         }
         .btn-upgrade:disabled { border-color: #333; color: #444; }
@@ -236,18 +240,13 @@
 
         .cultivate-btn-lg {
             width: 100%; padding: 14px; border: none; font-size: 1rem; font-weight: bold; border-radius: 8px; 
-            margin-top: 8px; cursor: pointer; touch-action: manipulation;
-            background: #222; color: #888; transition: all 0.1s;
+            margin-top: 8px; cursor: pointer; touch-action: manipulation; background: #222; color: #888; transition: all 0.1s;
         }
         .cultivate-btn-lg:active { transform: scale(0.97); }
         .cultivate-btn-lg.active { background: var(--primary-green); color: #000; box-shadow: 0 4px 0 #00b359; }
         .cultivate-btn-lg.active:active { box-shadow: 0 0 0; transform: translateY(4px); }
-        
-        .cultivate-btn-lg.active.risk { 
-            background: linear-gradient(135deg, #ff9800, #ff5722); color: white; box-shadow: 0 4px 0 #bf360c;
-        }
+        .cultivate-btn-lg.active.risk { background: linear-gradient(135deg, #ff9800, #ff5722); color: white; box-shadow: 0 4px 0 #bf360c; }
         .cultivate-btn-lg.active.risk:active { box-shadow: 0 0 0; transform: translateY(4px); }
-
         .cultivate-btn-lg.trib { 
             background: linear-gradient(45deg, #d32f2f, #b71c1c); color: #fff; animation: pulse 1.5s infinite; 
             box-shadow: 0 0 20px rgba(211, 47, 47, 0.4);
@@ -258,48 +257,30 @@
             animation: floatUp 0.8s forwards; font-size: 1.4rem; text-shadow: 2px 2px 0 #000; z-index: 100;
         }
 
-        .pity-tag { display: none !important; }
+        .crit-text {
+            position: absolute; color: #ffd700; font-weight: 900; pointer-events: none;
+            animation: critPop 1s forwards; font-size: 2rem; 
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #ffd700; z-index: 110;
+        }
+        @keyframes critPop { 0% { transform: scale(0.5); opacity: 0; } 20% { transform: scale(1.5); opacity: 1; } 100% { transform: scale(1) translateY(-100px); opacity: 0; } }
 
-        /* 爆炸/升级特效 */
         .particle {
-            position: absolute; width: 6px; height: 6px; border-radius: 50%;
-            pointer-events: none; opacity: 1;
+            position: absolute; width: 6px; height: 6px; border-radius: 50%; pointer-events: none; opacity: 1;
         }
-        @keyframes particleFly { 
-            0% { transform: translate(0, 0) scale(1); opacity: 1; } 
-            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } 
-        }
+        @keyframes particleFly { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
 
-        /* --- 增强版：汇聚灵气光点特效 (大而慢) --- */
+        /* 汇聚灵气光点 */
         .spirit-particle {
-            position: fixed;
-            width: 6px; height: 6px; /* 更大的粒子 */
-            background: #fff; 
-            border-radius: 50%;
-            /* 强烈的蓝色光晕 */
-            box-shadow: 
-                0 0 8px #fff,
-                0 0 16px var(--neon-blue),
-                0 0 32px var(--neon-blue);
-            pointer-events: none;
-            /* 速度变慢: 1.5s */
-            animation: spiritGather 1.5s ease-in forwards; 
-            z-index: 9999;
+            position: fixed; width: 6px; height: 6px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 8px #fff, 0 0 16px var(--neon-blue), 0 0 32px var(--neon-blue);
+            pointer-events: none; animation: spiritGather 1.5s ease-in forwards; z-index: 9999;
             will-change: transform, opacity, top, left;
         }
         @keyframes spiritGather {
-            0% { 
-                top: var(--sy); left: var(--sx); 
-                opacity: 0; 
-                transform: scale(0.2); 
-            }
+            0% { top: var(--sy); left: var(--sx); opacity: 0; transform: scale(0.2); }
             10% { opacity: 1; transform: scale(1); }
             80% { opacity: 1; transform: scale(1); }
-            100% { 
-                top: var(--ey); left: var(--ex); 
-                opacity: 0; 
-                transform: scale(0.5); /* 钻入核心变小 */
-            }
+            100% { top: var(--ey); left: var(--ex); opacity: 0; transform: scale(0.5); }
         }
 
         #tribulation-overlay {
@@ -331,53 +312,34 @@
         }
         input { background: #222; border: 1px solid #444; color: white; padding: 12px; margin: 20px 0; width: 100%; text-align: center; border-radius: 6px; font-size: 1.1rem;}
 
-        /* --- 华丽的渡劫成功界面特效 --- */
-        /* 成功背景：放射光芒 */
-        .modal.victory-mode {
-            background: radial-gradient(circle at center, rgba(255, 215, 0, 0.3) 0%, rgba(0,0,0,0.95) 70%);
-        }
+        /* 胜利相关 */
+        .modal.victory-mode { background: radial-gradient(circle at center, rgba(255, 215, 0, 0.3) 0%, rgba(0,0,0,0.95) 70%); }
         .modal-box.victory-box {
-            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
-            border: 2px solid var(--primary-gold);
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a); border: 2px solid var(--primary-gold);
             box-shadow: 0 0 50px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(255, 215, 0, 0.2);
             animation: victoryPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes victoryPop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
         .victory-title {
             font-size: 2.5rem; color: var(--primary-gold); margin: 0 0 10px 0;
-            text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 160, 0, 0.6);
             background: linear-gradient(to bottom, #fff, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             animation: titleShine 3s infinite alternate;
         }
         @keyframes titleShine { from { filter: brightness(1); } to { filter: brightness(1.3); } }
-
         .victory-badge {
             display: inline-block; padding: 5px 20px; background: rgba(255, 215, 0, 0.1);
             border: 1px solid var(--primary-gold); border-radius: 30px;
-            color: var(--primary-gold); font-weight: bold; font-size: 1.1rem;
-            margin-bottom: 20px; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            color: var(--primary-gold); font-weight: bold; font-size: 1.1rem; margin-bottom: 20px;
             animation: pulse 2s infinite;
         }
-        
         .victory-desc { color: #ddd; font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px; }
-        
-        .victory-btn {
-            background: linear-gradient(90deg, #ffd700, #ffab00); color: #000;
-            box-shadow: 0 5px 25px rgba(255, 215, 0, 0.5); border: none;
-        }
-        .victory-btn:active { transform: scale(0.95); box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3); }
-
-        /* 成功界面粒子 (金色上升) */
+        .victory-btn { background: linear-gradient(90deg, #ffd700, #ffab00); color: #000; border: none; box-shadow: 0 5px 25px rgba(255, 215, 0, 0.5); }
         .victory-particle {
             position: absolute; width: 4px; height: 4px; background: var(--primary-gold); border-radius: 50%;
-            box-shadow: 0 0 10px var(--primary-gold); pointer-events: none;
-            bottom: 0; opacity: 0; animation: victoryRise 3s infinite ease-in;
+            box-shadow: 0 0 10px var(--primary-gold); pointer-events: none; bottom: 0; opacity: 0; animation: victoryRise 3s infinite ease-in;
         }
         @keyframes victoryRise {
-            0% { transform: translateY(0) scale(1); opacity: 0; }
-            20% { opacity: 1; }
-            100% { transform: translateY(-400px) scale(0.5); opacity: 0; }
+            0% { transform: translateY(0) scale(1); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-400px) scale(0.5); opacity: 0; }
         }
     </style>
 </head>
@@ -394,6 +356,7 @@
     <div id="app">
         <div id="click-area">
             <div class="avatar-container" id="avatar">
+                <div class="core-aura"></div>
                 <div class="energy-core"></div>
                 <div class="energy-ring ring-1"></div>
                 <div class="energy-ring ring-2"></div>
@@ -521,6 +484,30 @@
     </div>
 
 <script>
+// --- 核心数值配置重构 ---
+// power: 代表每升一级增加的基础倍率。2代表第一级x2, 第二级x4(或累加)
+// 需求：每级效能2倍，每升1级增加一倍 => 这里的 power 定义为 "单级提供的基础倍率增量"
+// 线性插值生成 2 -> 100 的数值
+const generateSkills = () => {
+    const skills = [
+        "基础吐纳", "清尘术", "水球术", "大水球术", "碧水心法", 
+        "碧水剑法", "大衍龟息决", "烈火燎原诀", "厚土金钟罩", "青木长生功",
+        "庚金白虎杀", "紫气东来", "太上感应篇", "北冥神功", "八九玄功",
+        "袖里乾坤", "真·吃吃吃", "吞天魔功", "一念花开", "万剑归宗"
+    ];
+    return skills.map((name, i) => {
+        // Power 线性增长：从 2 到 100
+        const power = 2 + (98 * i / 19);
+        const baseCost = 100 * Math.pow(5, i);
+        return { 
+            name, 
+            cost: baseCost, 
+            power: Math.round(power * 10) / 10, // 保留一位小数
+            desc: `每级效能 +${Math.round(power)}倍` 
+        };
+    });
+};
+
 const CONFIG = {
     MAJOR_REALMS: [
         { name: "炼气期", baseReq: 100, exp: 1.5 },     
@@ -558,28 +545,7 @@ const CONFIG = {
         { name: "碧水剑 (臻)", mult: 100000000, cost: 100000000000000, tag: '灵宝' },
         { name: "轩辕剑", mult: 1000000000, cost: 9999999999999999, tag: '神器' }
     ],
-    SKILLS: [
-        { name: "基础吐纳", cost: 100, power: 1.1, desc: "修仙入门" },
-        { name: "清尘术", cost: 5000, power: 1.15, desc: "身无尘垢" },
-        { name: "水球术", cost: 50000, power: 1.2, desc: "威力惊人" },
-        { name: "大水球术", cost: 500000, power: 1.25, desc: "特别大的水球" },
-        { name: "碧水心法", cost: 5000000, power: 1.3, desc: "上善若水" },
-        { name: "碧水剑法", cost: 50000000, power: 1.35, desc: "剑气如水" },
-        { name: "大衍龟息决", cost: 200000000, power: 1.4, desc: "寿命极长" },
-        { name: "烈火燎原诀", cost: 1000000000, power: 1.45, desc: "火系霸道" },
-        { name: "厚土金钟罩", cost: 5000000000, power: 1.5, desc: "不动如山" },
-        { name: "青木长生功", cost: 20000000000, power: 1.55, desc: "草木精气" },
-        { name: "庚金白虎杀", cost: 100000000000, power: 1.6, desc: "主杀伐" },
-        { name: "紫气东来", cost: 500000000000, power: 1.65, desc: "吸收紫气" },
-        { name: "太上感应篇", cost: 2000000000000, power: 1.7, desc: "夺天地造化" },
-        { name: "北冥神功", cost: 10000000000000, power: 1.75, desc: "吞噬万物" },
-        { name: "八九玄功", cost: 50000000000000, power: 1.8, desc: "肉身成圣" },
-        { name: "袖里乾坤", cost: 200000000000000, power: 1.85, desc: "装尽天下" },
-        { name: "真·吃吃吃", cost: 1000000000000000, power: 1.9, desc: "吃就能变强" },
-        { name: "吞天魔功", cost: 5000000000000000, power: 1.95, desc: "吞噬诸王" },
-        { name: "一念花开", cost: 20000000000000000, power: 2.0, desc: "君临天下" },
-        { name: "万剑归宗", cost: 100000000000000000, power: 2.1, desc: "剑道至高" }
-    ]
+    SKILLS: generateSkills()
 };
 
 const game = {
@@ -597,7 +563,8 @@ const game = {
         realmFails: 0
     },
     
-    hold: { active: false, startTime: 0, timer: null, currentMult: 1 },
+    // hold: 增加 critMult 用于存储暴击翻倍
+    hold: { active: false, startTime: 0, timer: null, currentMult: 1, critMult: 1, lastCritTime: 0 },
 
     init() { ui.init(); this.loop(); },
 
@@ -611,13 +578,21 @@ const game = {
 
     getClickPower() {
         const base = Math.pow(this.data.realmIdx + 1, 3) * this.data.layer;
+        
         let skillMult = 1;
         this.data.skills.forEach(s => {
-            if(s.level > 0) skillMult *= Math.pow(s.power, s.level);
+            if(s.level > 0) {
+                // 新公式：基础倍率 * 等级。 例如 基础效能2，等级10 => x20
+                // 叠加方式：不同功法之间通常是乘法
+                // 但为了避免数值过早溢出，这里使用 (1 + Power*Level)
+                skillMult *= (1 + s.power * s.level);
+            }
         });
+
         const rootMult = CONFIG.ROOTS[this.data.rootIdx].mult;
         const weaponMult = CONFIG.WEAPONS[this.data.weaponIdx].mult;
-        const holdMult = this.hold.currentMult;
+        // 总长按倍率 = 时间倍率 * 暴击倍率
+        const holdMult = this.hold.currentMult * this.hold.critMult;
 
         return base * skillMult * rootMult * weaponMult * holdMult;
     },
@@ -852,10 +827,9 @@ const game = {
         const modal = document.getElementById('modal-end');
         const modalBox = document.getElementById('modal-end-box');
         modal.classList.remove('hidden');
-        modal.classList.add('victory-mode'); // 添加胜利模式样式
+        modal.classList.add('victory-mode'); 
         modalBox.classList.add('victory-box');
 
-        // 注入华丽的胜利内容
         modalBox.innerHTML = `
             <div style="position:absolute; top:0; left:0; width:100%; height:100%; overflow:hidden; pointer-events:none;" id="victory-particles"></div>
             <h1 class="victory-title">证道真仙</h1>
@@ -864,7 +838,7 @@ const game = {
             <button class="cultivate-btn-lg active victory-btn" onclick="game.reincarnate()">再入轮回</button>
         `;
         
-        ui.createVictoryParticles(); // 启动胜利粒子
+        ui.createVictoryParticles();
     },
 
     handleDeath() {
@@ -912,6 +886,9 @@ const ui = {
             if(game.hold.active) return;
             game.hold.active = true;
             game.hold.startTime = Date.now();
+            game.hold.lastCritTime = 0; 
+            game.hold.critMult = 1; // 重置暴击倍率
+
             document.getElementById('avatar').classList.add('channeling');
             document.getElementById('channel-container').classList.add('active');
             document.getElementById('channel-text').classList.add('active');
@@ -922,12 +899,11 @@ const ui = {
             game.hold.active = false;
             clearInterval(game.hold.timer);
             game.hold.currentMult = 1; 
+            game.hold.critMult = 1;
             
-            // 移除 Channeling
             const avatar = document.getElementById('avatar');
             avatar.classList.remove('channeling');
             
-            // 重置核心样式
             const core = avatar.querySelector('.energy-core');
             core.style.transform = 'scale(1)';
             core.style.boxShadow = '';
@@ -943,69 +919,18 @@ const ui = {
         document.addEventListener('mouseup', end);
         document.addEventListener('touchend', end);
         
-        // --- 悬浮球拖拽 ---
+        // 拖拽逻辑同前
         const ball = document.getElementById('float-spirit');
         let isDragging = false;
         let startX, startY, initialLeft, initialTop;
 
-        const onDragStart = (e) => {
-            isDragging = true;
-            ball.style.transition = 'none';
-            const touch = e.touches ? e.touches[0] : e;
-            startX = touch.clientX;
-            startY = touch.clientY;
-            initialLeft = ball.getBoundingClientRect().left;
-            initialTop = ball.getBoundingClientRect().top;
-            e.preventDefault(); 
-        };
+        const onDragStart = (e) => { isDragging = true; ball.style.transition = 'none'; const touch = e.touches ? e.touches[0] : e; startX = touch.clientX; startY = touch.clientY; initialLeft = ball.getBoundingClientRect().left; initialTop = ball.getBoundingClientRect().top; e.preventDefault(); };
+        const onDragMove = (e) => { if (!isDragging) return; const touch = e.touches ? e.touches[0] : e; ball.style.left = `${initialLeft + touch.clientX - startX}px`; ball.style.top = `${initialTop + touch.clientY - startY}px`; ball.style.right = 'auto'; };
+        const onDragEnd = () => { if (!isDragging) return; isDragging = false; ball.style.transition = 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)'; const rect = ball.getBoundingClientRect(); if (rect.left + rect.width / 2 < window.innerWidth / 2) { ball.style.left = '0px'; ball.classList.add('dock-left'); ball.style.borderRadius = "0 20px 20px 0"; ball.style.borderLeft = "none"; ball.style.borderRight = "1px solid var(--primary-green)"; ball.style.alignItems = "flex-start"; } else { ball.style.left = (window.innerWidth - rect.width) + 'px'; ball.classList.remove('dock-left'); ball.style.borderRadius = "20px 0 0 20px"; ball.style.borderRight = "none"; ball.style.borderLeft = "1px solid var(--primary-green)"; ball.style.alignItems = "flex-end"; } let newTop = parseInt(ball.style.top); if (newTop < 50) newTop = 50; if (newTop > window.innerHeight - 100) newTop = window.innerHeight - 100; ball.style.top = newTop + 'px'; };
 
-        const onDragMove = (e) => {
-            if (!isDragging) return;
-            const touch = e.touches ? e.touches[0] : e;
-            const dx = touch.clientX - startX;
-            const dy = touch.clientY - startY;
-            ball.style.left = `${initialLeft + dx}px`;
-            ball.style.top = `${initialTop + dy}px`;
-            ball.style.right = 'auto'; 
-        };
-
-        const onDragEnd = () => {
-            if (!isDragging) return;
-            isDragging = false;
-            ball.style.transition = 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
-
-            const rect = ball.getBoundingClientRect();
-            const screenW = window.innerWidth;
-            const screenH = window.innerHeight;
-
-            if (rect.left + rect.width / 2 < screenW / 2) {
-                ball.style.left = '0px';
-                ball.style.right = 'auto';
-                ball.classList.add('dock-left');
-                ball.style.borderRadius = "0 20px 20px 0";
-                ball.style.borderLeft = "none";
-                ball.style.borderRight = "1px solid var(--primary-green)";
-                ball.style.alignItems = "flex-start";
-            } else {
-                ball.style.left = (screenW - rect.width) + 'px'; 
-                ball.classList.remove('dock-left');
-                ball.style.borderRadius = "20px 0 0 20px";
-                ball.style.borderRight = "none";
-                ball.style.borderLeft = "1px solid var(--primary-green)";
-                ball.style.alignItems = "flex-end";
-            }
-            let newTop = parseInt(ball.style.top);
-            if (newTop < 50) newTop = 50;
-            if (newTop > screenH - 100) newTop = screenH - 100;
-            ball.style.top = newTop + 'px';
-        };
-
-        ball.addEventListener('mousedown', onDragStart);
-        ball.addEventListener('touchstart', onDragStart, {passive:false});
-        window.addEventListener('mousemove', onDragMove);
-        window.addEventListener('touchmove', onDragMove, {passive:false});
-        window.addEventListener('mouseup', onDragEnd);
-        window.addEventListener('touchend', onDragEnd);
+        ball.addEventListener('mousedown', onDragStart); ball.addEventListener('touchstart', onDragStart, {passive:false});
+        window.addEventListener('mousemove', onDragMove); window.addEventListener('touchmove', onDragMove, {passive:false});
+        window.addEventListener('mouseup', onDragEnd); window.addEventListener('touchend', onDragEnd);
 
         this.render();
     },
@@ -1014,34 +939,66 @@ const ui = {
         const now = Date.now();
         const diff = (now - game.hold.startTime) / 1000; 
         
-        // --- 核心逻辑：随时间变大变亮 ---
+        // --- 核心逻辑1：极致亮度 ---
         const core = document.querySelector('.energy-core');
-        const maxScaleTime = 5.0; // 5秒达到最大效果
+        const maxScaleTime = 5.0; 
         const progress = Math.min(diff, maxScaleTime) / maxScaleTime;
-        
-        const currentScale = 1 + (progress * 1.5); // 1.0 -> 2.5
-        const currentGlow = 20 + (progress * 80);  // 光晕 20px -> 100px
+        const currentScale = 1 + (progress * 1.5); 
+        // 阴影范围扩大到 200px 模拟超级亮
+        const currentGlow = 20 + (progress * 180); 
         
         if(core) {
             core.style.transform = `scale(${currentScale})`;
-            core.style.boxShadow = `0 0 ${currentGlow}px var(--neon-blue), 0 0 ${currentGlow * 2}px #fff`;
+            // 多重阴影叠加：白核 -> 亮蓝 -> 深蓝
+            core.style.boxShadow = `
+                0 0 ${currentGlow * 0.5}px #fff,
+                0 0 ${currentGlow}px var(--neon-blue),
+                0 0 ${currentGlow * 2}px var(--neon-blue)
+            `;
         }
 
-        // --- 倍率逻辑 ---
+        // --- 核心逻辑2：5秒判定暴击 ---
+        // 检查是否跨过了 5s, 10s, 15s 的门槛
+        const checkPoint = Math.floor(diff / 5);
+        if (checkPoint > game.hold.lastCritTime && diff >= 5) {
+            game.hold.lastCritTime = checkPoint;
+            // 90% 概率触发 5倍暴击
+            if (Math.random() < 0.9) {
+                game.hold.critMult *= 5;
+                this.showCritText();
+            }
+        }
+
+        // --- 基础倍率逻辑 ---
         const index = Math.floor(diff / 5);
         game.hold.currentMult = (index + 1) * 10;
+        
+        // 总倍率
+        const totalMult = game.hold.currentMult * game.hold.critMult;
+
         const percent = ((diff % 5) / 5) * 100;
         document.getElementById('channel-fill').style.width = percent + '%';
         
         const channelText = document.getElementById('channel-text');
         if(channelText) {
-             channelText.innerHTML = `吟唱 ${diff.toFixed(1)}s <span style="color:#ffeb3b; margin-left:10px;">x${game.hold.currentMult}倍</span>`;
+             channelText.innerHTML = `吟唱 ${diff.toFixed(1)}s <span style="color:#ffeb3b; margin-left:10px;">x${this.fmt(totalMult)}倍</span>`;
         }
 
-        // --- 生成粒子 (稍慢) ---
-        if(Math.random() > 0.4) {
-            this.spawnGatherParticle();
-        }
+        // --- 生成粒子 ---
+        if(Math.random() > 0.4) this.spawnGatherParticle();
+    },
+
+    showCritText() {
+        const avatar = document.getElementById('avatar');
+        if(!avatar) return;
+        const rect = avatar.getBoundingClientRect();
+        const el = document.createElement('div');
+        el.className = 'crit-text';
+        el.innerText = "灵力暴走 x5 !!!";
+        el.style.left = (rect.left + rect.width/2 - 80) + 'px';
+        el.style.top = (rect.top - 50) + 'px';
+        document.body.appendChild(el);
+        setTimeout(()=>el.remove(), 1000);
     },
 
     spawnGatherParticle() {
@@ -1050,9 +1007,7 @@ const ui = {
         const rect = avatar.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
-
         const angle = Math.random() * Math.PI * 2;
-        // 半径稍微扩大，让粒子从屏幕外飞入
         const radius = Math.max(window.innerWidth, window.innerHeight) * 0.6;
         const startX = window.innerWidth/2 + Math.cos(angle) * radius;
         const startY = window.innerHeight/2 + Math.sin(angle) * radius;
@@ -1063,9 +1018,8 @@ const ui = {
         p.style.setProperty('--sy', startY + 'px');
         p.style.setProperty('--ex', centerX + 'px');
         p.style.setProperty('--ey', centerY + 'px');
-        
         document.body.appendChild(p);
-        setTimeout(() => p.remove(), 1500); // 对应 CSS 1.5s
+        setTimeout(() => p.remove(), 1500); 
     },
 
     createVictoryParticles() {
@@ -1155,16 +1109,13 @@ const ui = {
             p.style.backgroundColor = color;
             p.style.left = x + 'px';
             p.style.top = y + 'px';
-            
             const angle = Math.random() * Math.PI * 2;
             const velocity = Math.random() * 80 + 20;
             const tx = Math.cos(angle) * velocity + 'px';
             const ty = Math.sin(angle) * velocity + 'px';
-            
             p.style.setProperty('--tx', tx);
             p.style.setProperty('--ty', ty);
             p.style.animation = 'particleFly 0.6s ease-out forwards';
-            
             container.appendChild(p);
             setTimeout(() => p.remove(), 600);
         }
@@ -1209,6 +1160,9 @@ const ui = {
             let displayName = s.name;
             if(isMax) displayName = `<span style="color:var(--rare-purple);font-weight:bold;text-shadow:0 0 5px var(--rare-purple)">至臻·${s.name}</span>`;
 
+            // 显示数值时也保留小数位
+            const powerDisp = s.power;
+
             div.innerHTML += `
                 <div class="list-item">
                     <div style="flex:1; padding-right:10px;">
@@ -1216,7 +1170,7 @@ const ui = {
                             ${displayName} <span style="font-size:0.75rem; color:#666; margin-left:5px;">Lv.${s.level}</span>
                         </div>
                         <div style="font-size:0.7rem; color:#555; margin-top:2px;">
-                            效能: <span style="color:${isMax?'var(--primary-gold)':'var(--neon-blue)'}">x${s.power.toFixed(2)}</span> / 级
+                            效能: <span style="color:${isMax?'var(--primary-gold)':'var(--neon-blue)'}">基础+${powerDisp.toFixed(1)}</span> / 级
                         </div>
                     </div>
                     <button class="btn-upgrade ${isMax?'maxed':''}" ${canBuy?'':'disabled'} 
