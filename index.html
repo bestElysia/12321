@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>无尽修仙：绝世无双</title>
+    <title>无尽修仙：逆天改命</title>
     <style>
         /* =========================================
            CSS 样式表
@@ -16,7 +16,7 @@
             --danger-red: #ff3b30;
             --neon-blue: #00f2ff;
             --rare-purple: #e040fb;
-            --god-tier: #ff0055; /* 绝世无双色 */
+            --god-tier: #ff0055;
             --text-main: #e0e0e0;
             --text-dim: #757575;
             --border-color: #333;
@@ -44,23 +44,39 @@
             background: radial-gradient(circle at center, rgba(30,30,40,0.3) 0%, rgba(0,0,0,1) 100%);
         }
 
-        /* --- 顶部信息栏 (扩展版) --- */
+        /* --- 顶部信息栏 (iOS 深度适配) --- */
         header {
-            padding-top: max(10px, env(safe-area-inset-top));
-            padding-bottom: 10px; padding-left: 15px; padding-right: 15px;
+            /* 核心修改：大幅增加顶部安全距离，适配灵动岛 */
+            padding-top: max(50px, env(safe-area-inset-top));
+            padding-bottom: 15px; 
+            padding-left: 20px; 
+            padding-right: 20px;
             border-bottom: 1px solid var(--border-color);
-            background: rgba(10, 10, 15, 0.95);
-            display: flex; flex-direction: column; justify-content: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            min-height: 100px; /* 加高以容纳更多信息 */
-            font-size: 0.8rem;
+            background: rgba(10, 10, 15, 0.98);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.6);
+            z-index: 50;
         }
-        .header-top { display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 5px; }
-        .header-row { display: flex; justify-content: space-between; width: 100%; color: #aaa; margin-top: 2px; }
         
-        .spirit-val { font-family: 'Courier New', monospace; font-size: 1.4rem; color: var(--primary-green); font-weight: bold; }
-        .tag-box { padding: 1px 6px; border-radius: 4px; border: 1px solid #444; font-size: 0.7rem; }
-        .tag-god { border-color: var(--god-tier); color: var(--god-tier); text-shadow: 0 0 5px var(--god-tier); }
+        .header-top-row {
+            display: flex; justify-content: space-between; width: 100%; align-items: flex-end; margin-bottom: 5px;
+        }
+
+        /* 灵力值特大显示 */
+        .spirit-container { text-align: center; width: 100%; margin-bottom: 8px; }
+        .spirit-label { font-size: 0.7rem; color: #666; margin-bottom: 2px; }
+        .spirit-val { 
+            font-family: 'Courier New', monospace; font-size: 1.8rem; 
+            color: var(--primary-green); font-weight: bold; 
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+        }
+
+        .header-info-row { 
+            display: flex; justify-content: space-between; width: 100%; font-size: 0.75rem; color: #aaa; 
+            background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 6px;
+        }
+        .tag-box { color: #fff; font-weight: bold; }
+        .tag-god { color: var(--god-tier); text-shadow: 0 0 5px var(--god-tier); }
 
         /* --- 核心点击区 --- */
         #click-area {
@@ -71,7 +87,7 @@
         #click-area:active { background: rgba(255, 255, 255, 0.02); }
 
         .avatar-container {
-            width: 180px; height: 180px; border-radius: 50%;
+            width: 170px; height: 170px; border-radius: 50%;
             border: 3px solid #333;
             display: flex; justify-content: center; align-items: center;
             position: relative; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -81,24 +97,24 @@
         .avatar-container.channeling {
             border-color: var(--neon-blue); box-shadow: 0 0 50px var(--neon-blue); transform: scale(1.05);
         }
-        .meditate-icon { font-size: 4.5rem; transition: transform 0.1s; }
+        .meditate-icon { font-size: 4rem; transition: transform 0.1s; }
 
         .realm-tag {
-            position: absolute; bottom: -15px;
+            position: absolute; bottom: -12px;
             background: #000; border: 1px solid var(--primary-gold); color: var(--primary-gold);
-            padding: 4px 15px; border-radius: 15px; font-size: 0.8rem; font-weight: bold;
+            padding: 3px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;
             box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); white-space: nowrap;
         }
 
         /* 进度条 */
-        .channel-bar { margin-top: 30px; width: 70%; height: 6px; background: #222; border-radius: 3px; position: relative; opacity: 0; }
+        .channel-bar { margin-top: 25px; width: 60%; height: 5px; background: #222; border-radius: 3px; position: relative; opacity: 0; }
         .channel-bar.active { opacity: 1; }
         .channel-fill { height: 100%; background: var(--neon-blue); width: 0%; border-radius: 3px; box-shadow: 0 0 10px var(--neon-blue); }
-        .channel-text { text-align: center; margin-top: 8px; font-size: 0.9rem; color: var(--neon-blue); height: 20px; text-shadow: 0 0 5px var(--neon-blue); }
+        .channel-text { text-align: center; margin-top: 5px; font-size: 0.85rem; color: var(--neon-blue); height: 20px; text-shadow: 0 0 5px var(--neon-blue); }
 
         /* --- 底部面板 --- */
         #panel-container { 
-            height: 55%; background: var(--panel-bg); border-top: 1px solid var(--border-color); display: flex; flex-direction: column;
+            height: 52%; background: var(--panel-bg); border-top: 1px solid var(--border-color); display: flex; flex-direction: column;
             padding-bottom: env(safe-area-inset-bottom);
         }
         
@@ -118,7 +134,6 @@
             display: flex; justify-content: space-between; align-items: center;
         }
         
-        /* 按钮通用 */
         .btn-mini {
             background: transparent; border: 1px solid var(--primary-green); color: var(--primary-green);
             padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; touch-action: manipulation;
@@ -126,15 +141,17 @@
         .btn-mini:disabled { border-color: #444; color: #444; }
         .btn-mini.maxed { border-color: var(--primary-gold); color: var(--primary-gold); background: rgba(255,215,0,0.05); }
 
-        /* 修炼页面布局 */
-        .cultivate-section { margin-bottom: 20px; border-bottom: 1px dashed #333; padding-bottom: 15px; }
-        .cultivate-header { color: #fff; font-size: 1rem; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .cultivate-section { margin-bottom: 15px; border-bottom: 1px dashed #333; padding-bottom: 15px; }
+        .cultivate-header { color: #fff; font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;}
+        
         .cultivate-btn-lg {
             width: 100%; padding: 12px; border: none; font-size: 1rem; font-weight: bold; border-radius: 6px; 
             margin-top: 5px; cursor: pointer; touch-action: manipulation;
-            background: #222; color: #888;
+            background: #222; color: #888; transition: transform 0.1s;
         }
+        .cultivate-btn-lg:active { transform: scale(0.98); }
         .cultivate-btn-lg.active { background: var(--primary-green); color: #000; }
+        .cultivate-btn-lg.active.risk { background: linear-gradient(45deg, #ff9800, #ff5722); color: white; } /* 60%概率按钮色 */
         .cultivate-btn-lg.trib { 
             background: linear-gradient(45deg, #d32f2f, #b71c1c); color: #fff; animation: pulse 1.5s infinite; 
         }
@@ -172,6 +189,8 @@
             text-align: center; width: 85%; max-width: 400px;
         }
         input { background: #333; border: 1px solid #555; color: white; padding: 10px; margin: 15px 0; width: 90%; text-align: center; }
+        
+        .pity-tag { font-size: 0.7rem; padding: 2px 6px; background: #333; border-radius: 4px; color: #aaa; }
     </style>
 </head>
 <body>
@@ -180,18 +199,20 @@
 
     <div id="app">
         <header>
-            <div class="header-top">
-                <div style="font-size: 1.1rem; color: var(--primary-gold); font-weight: bold;" id="player-name">道友</div>
+            <div class="spirit-container">
+                <div class="spirit-label">天地灵力</div>
                 <div class="spirit-val" id="spirit-disp">0</div>
             </div>
-            
-            <div class="header-row">
-                <span>天赋: <span id="talent-disp" class="tag-box">凡品灵根</span></span>
-                <span>法宝: <span id="weapon-disp" class="tag-box">锈铁剑</span></span>
-            </div>
-            <div class="header-row" style="margin-top:5px; font-size:0.7rem;">
-                <span>轮回: <span id="reincarnate-count">0</span> 世</span>
-                <span>灵气加成: <span id="mult-disp" style="color:var(--primary-green)">x1.0</span></span>
+
+            <div class="header-info-row">
+                <div style="display:flex; flex-direction:column; align-items:flex-start;">
+                    <div style="margin-bottom:2px;"><span style="color:#666">道号:</span> <span id="player-name" style="color:var(--primary-gold)">道友</span></div>
+                    <div><span style="color:#666">轮回:</span> <span id="reincarnate-count">0</span> 世</div>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                    <div style="margin-bottom:2px;"><span id="talent-disp" class="tag-box">凡品灵根</span></div>
+                    <div><span id="weapon-disp" class="tag-box">锈铁剑</span></div>
+                </div>
             </div>
         </header>
 
@@ -207,7 +228,7 @@
             <div class="channel-text" id="channel-text"></div>
             
             <p style="margin-top: 15px; color: #666; font-size: 0.8rem;">
-                长按屏幕 <span style="color:var(--neon-blue)">汇聚灵气</span> (每5秒倍率+10)
+                长按 <span style="color:var(--neon-blue)">汇聚灵气</span> (每5秒倍率+10)
             </p>
         </div>
 
@@ -220,7 +241,7 @@
 
             <div id="tab-skills" class="tab-content show">
                 <div style="font-size:0.75rem;color:#666;text-align:center;margin-bottom:10px;">
-                    长按升级 · 满级解锁<span style="color:#e91e63">至臻</span>称号 · 全至臻必过天劫
+                    长按升级 · 满级解锁<span style="color:#e91e63">至臻</span> · 全至臻+满灵根+满法宝必过天劫
                 </div>
                 <div id="skills-list"></div>
             </div>
@@ -235,27 +256,35 @@
                     
                     <button id="btn-realm" class="cultivate-btn-lg" onclick="game.upgradeRealm()">突破瓶颈</button>
                     <button id="btn-trib" class="cultivate-btn-lg trib hidden" onclick="game.startTribulation()">逆天改命 (百雷天劫)</button>
-                    <div id="trib-warn" class="hidden" style="color:#ff3b30; font-size:0.7rem; margin-top:5px;">全功法至臻圆满可100%成功，否则50%几率陨落。</div>
+                    <div id="trib-warn" class="hidden" style="color:#ff3b30; font-size:0.7rem; margin-top:5px; line-height:1.4;">
+                        需【全功法至臻】+【灵根绝世】+【法宝至臻】<br>方可 100% 成功，否则 50% 概率陨落。
+                    </div>
                 </div>
 
                 <div class="cultivate-section">
                     <div class="cultivate-header">
-                        <span>淬炼灵根</span>
-                        <span id="next-root-name" style="color:var(--neon-blue)">下品灵根</span>
+                        <span>淬炼灵根 <span style="font-size:0.7rem; color:#888;">(成功率60%)</span></span>
+                        <span id="pity-root" class="pity-tag">保底 0/10</span>
                     </div>
-                    <div style="font-size:0.8rem; color:#666; margin-bottom:5px;">效果: 全局灵气 <span id="root-bonus" style="color:var(--primary-green)">+50%</span></div>
+                    <div style="font-size:0.8rem; color:#666; margin-bottom:5px; display:flex; justify-content:space-between;">
+                        <span>下阶: <span id="next-root-name" style="color:var(--neon-blue)">下品灵根</span></span>
+                        <span id="root-bonus" style="color:var(--primary-green)"></span>
+                    </div>
                     <div style="font-size:0.8rem; color:#666;">消耗: <span id="req-root" style="color:#fff">500</span></div>
-                    <button id="btn-root" class="cultivate-btn-lg" onclick="game.upgradeRoot()">洗髓伐骨</button>
+                    <button id="btn-root" class="cultivate-btn-lg" onclick="game.upgradeRoot()">洗髓伐骨 (赌!)</button>
                 </div>
 
                 <div class="cultivate-section" style="border:none;">
                     <div class="cultivate-header">
-                        <span>祭炼本命法宝</span>
-                        <span id="next-weapon-name" style="color:var(--rare-purple)">木剑</span>
+                        <span>祭炼法宝 <span style="font-size:0.7rem; color:#888;">(成功率60%)</span></span>
+                        <span id="pity-weapon" class="pity-tag">保底 0/10</span>
                     </div>
-                    <div style="font-size:0.8rem; color:#666; margin-bottom:5px;">效果: 额外倍率 <span id="weapon-bonus" style="color:var(--primary-green)">x2.0</span></div>
+                    <div style="font-size:0.8rem; color:#666; margin-bottom:5px; display:flex; justify-content:space-between;">
+                        <span>下阶: <span id="next-weapon-name" style="color:var(--rare-purple)">木剑</span></span>
+                        <span id="weapon-bonus" style="color:var(--primary-green)"></span>
+                    </div>
                     <div style="font-size:0.8rem; color:#666;">消耗: <span id="req-weapon" style="color:#fff">1,000</span></div>
-                    <button id="btn-weapon" class="cultivate-btn-lg" onclick="game.upgradeWeapon()">祭炼法宝</button>
+                    <button id="btn-weapon" class="cultivate-btn-lg" onclick="game.upgradeWeapon()">祭炼法宝 (赌!)</button>
                 </div>
             </div>
 
@@ -268,7 +297,7 @@
     <div id="modal-start" class="modal">
         <div class="modal-box">
             <h2 style="color: var(--primary-gold)">踏入仙途</h2>
-            <p style="color:#888;font-size:0.9rem;">检测到道友天资绝世</p>
+            <p style="color:#888;font-size:0.9rem;">洗髓伐骨，逆天改命</p>
             <input type="text" id="inp-name" placeholder="请输入道号" maxlength="6">
             <button class="cultivate-btn-lg active" onclick="game.startGame()">开始修仙</button>
         </div>
@@ -292,13 +321,7 @@
     </div>
 
 <script>
-/**
- * ==========================================================
- * 游戏核心配置 (海量内容版)
- * ==========================================================
- */
 const CONFIG = {
-    // 境界 (10个大境界)
     MAJOR_REALMS: [
         { name: "炼气期", baseReq: 100, exp: 1.5 },     
         { name: "筑基期", baseReq: 10000, exp: 1.6 },    
@@ -311,7 +334,6 @@ const CONFIG = {
         { name: "渡劫期", baseReq: 500000000000000, exp: 2.3 }, 
         { name: "陆地真仙", baseReq: 0, exp: 1 }
     ],
-    // 灵根 (10级，全局乘法)
     ROOTS: [
         { name: "凡品废灵根", mult: 1, cost: 0 },
         { name: "下品灵根", mult: 1.5, cost: 1000 },
@@ -322,9 +344,8 @@ const CONFIG = {
         { name: "极品天灵根", mult: 12, cost: 10000000000 },
         { name: "变异雷灵根", mult: 20, cost: 500000000000 },
         { name: "仙灵根", mult: 50, cost: 10000000000000 },
-        { name: "绝世无双", mult: 100, cost: 999999999999999 } // 顶格
+        { name: "绝世无双", mult: 100, cost: 999999999999999 } 
     ],
-    // 武器 (10级，独立乘法)
     WEAPONS: [
         { name: "破树枝", mult: 1, cost: 0 },
         { name: "生锈铁剑", mult: 1.2, cost: 5000 },
@@ -337,28 +358,27 @@ const CONFIG = {
         { name: "真·碧水剑 (至臻)", mult: 50, cost: 100000000000000 },
         { name: "轩辕剑", mult: 100, cost: 9999999999999999 }
     ],
-    // 功法 (20个，指数增长)
     SKILLS: [
-        { name: "基础吐纳", cost: 100, power: 1.1, desc: "修仙入门，呼吸吐纳" },
-        { name: "超级清尘术", cost: 5000, power: 1.15, desc: "被动：时刻保持身体清洁，心情好修炼快" },
-        { name: "超级水球术", cost: 50000, power: 1.2, desc: "凝聚巨大的水球，威力惊人" },
-        { name: "超级大水球术", cost: 500000, power: 1.25, desc: "比超级水球术还要大的水球" },
-        { name: "真·碧水流云心法", cost: 5000000, power: 1.3, desc: "上善若水，生生不息" },
-        { name: "真·碧水流云剑法", cost: 50000000, power: 1.35, desc: "剑气如水，连绵不绝" },
-        { name: "大衍龟息决", cost: 200000000, power: 1.4, desc: "模拟神龟呼吸，寿命极长" },
-        { name: "烈火燎原诀", cost: 1000000000, power: 1.45, desc: "火系霸道功法" },
-        { name: "厚土金钟罩", cost: 5000000000, power: 1.5, desc: "防御无双，不动如山" },
-        { name: "青木长生功", cost: 20000000000, power: 1.55, desc: "汲取草木精气" },
-        { name: "庚金白虎杀", cost: 100000000000, power: 1.6, desc: "主杀伐，攻击力极强" },
-        { name: "紫气东来", cost: 500000000000, power: 1.65, desc: "每日清晨吸收第一缕紫气" },
-        { name: "太上感应篇", cost: 2000000000000, power: 1.7, desc: "感应天地，夺造化" },
-        { name: "北冥神功", cost: 10000000000000, power: 1.75, desc: "吞噬万物灵气" },
-        { name: "八九玄功", cost: 50000000000000, power: 1.8, desc: "肉身成圣，万劫不磨" },
-        { name: "袖里乾坤", cost: 200000000000000, power: 1.85, desc: "一袖装尽天下" },
-        { name: "真·吃吃吃", cost: 1000000000000000, power: 1.9, desc: "通过吃天材地宝直接变强" },
-        { name: "吞天魔功", cost: 5000000000000000, power: 1.95, desc: "以凡体吞噬诸王" },
+        { name: "基础吐纳", cost: 100, power: 1.1, desc: "修仙入门" },
+        { name: "超级清尘术", cost: 5000, power: 1.15, desc: "被动：时刻保持身体清洁" },
+        { name: "超级水球术", cost: 50000, power: 1.2, desc: "威力惊人" },
+        { name: "超级大水球术", cost: 500000, power: 1.25, desc: "比超级水球术还要大" },
+        { name: "真·碧水流云心法", cost: 5000000, power: 1.3, desc: "上善若水" },
+        { name: "真·碧水流云剑法", cost: 50000000, power: 1.35, desc: "剑气如水" },
+        { name: "大衍龟息决", cost: 200000000, power: 1.4, desc: "寿命极长" },
+        { name: "烈火燎原诀", cost: 1000000000, power: 1.45, desc: "火系霸道" },
+        { name: "厚土金钟罩", cost: 5000000000, power: 1.5, desc: "不动如山" },
+        { name: "青木长生功", cost: 20000000000, power: 1.55, desc: "草木精气" },
+        { name: "庚金白虎杀", cost: 100000000000, power: 1.6, desc: "主杀伐" },
+        { name: "紫气东来", cost: 500000000000, power: 1.65, desc: "吸收紫气" },
+        { name: "太上感应篇", cost: 2000000000000, power: 1.7, desc: "夺天地造化" },
+        { name: "北冥神功", cost: 10000000000000, power: 1.75, desc: "吞噬万物" },
+        { name: "八九玄功", cost: 50000000000000, power: 1.8, desc: "肉身成圣" },
+        { name: "袖里乾坤", cost: 200000000000000, power: 1.85, desc: "装尽天下" },
+        { name: "真·吃吃吃", cost: 1000000000000000, power: 1.9, desc: "吃就能变强" },
+        { name: "吞天魔功", cost: 5000000000000000, power: 1.95, desc: "吞噬诸王" },
         { name: "一念花开", cost: 20000000000000000, power: 2.0, desc: "君临天下" },
-        { name: "万剑归宗", cost: 100000000000000000, power: 2.1, desc: "剑道至高境界" }
+        { name: "万剑归宗", cost: 100000000000000000, power: 2.1, desc: "剑道至高" }
     ]
 };
 
@@ -366,12 +386,15 @@ const game = {
     data: {
         name: "无名",
         spirit: 0,
-        realmIdx: 0, layer: 1, // 境界
-        rootIdx: 0, // 灵根等级
-        weaponIdx: 0, // 武器等级
+        realmIdx: 0, layer: 1, 
+        rootIdx: 0, 
+        weaponIdx: 0,
         skills: CONFIG.SKILLS.map(s => ({...s, level: 0})),
         reincarnationCount: 0,
-        isTribulating: false
+        isTribulating: false,
+        // 保底计数器
+        rootFails: 0,
+        weaponFails: 0
     },
     
     hold: { active: false, startTime: 0, timer: null, currentMult: 1 },
@@ -382,28 +405,18 @@ const game = {
         const n = document.getElementById('inp-name').value.trim();
         if(n) this.data.name = n;
         document.getElementById('modal-start').classList.add('hidden');
-        ui.log(`道友 <b>${this.data.name}</b> 踏入仙途，检测为凡品灵根。`);
+        ui.log(`道友 <b>${this.data.name}</b> 踏入仙途。`);
         ui.render();
     },
 
-    // --- 核心数值计算 ---
     getClickPower() {
-        // 1. 境界基础: (idx+1)^3 * layer
         const base = Math.pow(this.data.realmIdx + 1, 3) * this.data.layer;
-        
-        // 2. 功法加成: 指数连乘
         let skillMult = 1;
         this.data.skills.forEach(s => {
             if(s.level > 0) skillMult *= Math.pow(s.power, s.level);
         });
-
-        // 3. 灵根加成 (全局乘法)
         const rootMult = CONFIG.ROOTS[this.data.rootIdx].mult;
-
-        // 4. 武器加成 (全局乘法)
         const weaponMult = CONFIG.WEAPONS[this.data.weaponIdx].mult;
-
-        // 5. 长按爆发
         const holdMult = this.hold.currentMult;
 
         return base * skillMult * rootMult * weaponMult * holdMult;
@@ -411,7 +424,6 @@ const game = {
 
     processClick(e) {
         if(this.data.isTribulating) return;
-
         const gain = this.getClickPower();
         this.data.spirit += gain;
         
@@ -424,16 +436,12 @@ const game = {
             const y = window.innerHeight / 2 - 50 + (Math.random()*40 - 20);
             ui.showFloatText(x, y, gain);
         }
-
         ui.updateSpirit();
     },
 
-    // --- 升级逻辑 ---
-    
-    // 升级功法
+    // --- 升级逻辑 (含概率) ---
     upgradeSkill(idx) {
         const s = this.data.skills[idx];
-        // 成本公式：base * 1.6^level
         const cost = s.cost * Math.pow(1.6, s.level);
         if(this.data.spirit >= cost) {
             this.data.spirit -= cost;
@@ -443,31 +451,51 @@ const game = {
         return false;
     },
 
-    // 升级灵根
+    // 升级灵根：60%概率，10保底
     upgradeRoot() {
         if(this.data.rootIdx >= CONFIG.ROOTS.length - 1) return;
         const next = CONFIG.ROOTS[this.data.rootIdx + 1];
+        
         if(this.data.spirit >= next.cost) {
             this.data.spirit -= next.cost;
-            this.data.rootIdx++;
-            ui.log(`灵根蜕变为 [${next.name}]，修炼速度大增！`, 'neon-blue');
+            
+            // 判定成功：概率60% 或 保底>=9
+            const success = (Math.random() < 0.6) || (this.data.rootFails >= 9);
+            
+            if(success) {
+                this.data.rootIdx++;
+                this.data.rootFails = 0;
+                ui.log(`洗髓成功！灵根进阶为 [${next.name}]！`, 'neon-blue');
+            } else {
+                this.data.rootFails++;
+                ui.log(`洗髓失败，灵气逸散... (当前保底: ${this.data.rootFails}/10)`, '#ff5722');
+            }
             ui.render();
         }
     },
 
-    // 升级武器
+    // 升级武器：60%概率，10保底
     upgradeWeapon() {
         if(this.data.weaponIdx >= CONFIG.WEAPONS.length - 1) return;
         const next = CONFIG.WEAPONS[this.data.weaponIdx + 1];
+        
         if(this.data.spirit >= next.cost) {
             this.data.spirit -= next.cost;
-            this.data.weaponIdx++;
-            ui.log(`本命法宝祭炼为 [${next.name}]，威力倍增！`, 'rare-purple');
+            
+            const success = (Math.random() < 0.6) || (this.data.weaponFails >= 9);
+            
+            if(success) {
+                this.data.weaponIdx++;
+                this.data.weaponFails = 0;
+                ui.log(`祭炼成功！法宝晋升为 [${next.name}]！`, 'rare-purple');
+            } else {
+                this.data.weaponFails++;
+                ui.log(`祭炼失败，材料损毁... (当前保底: ${this.data.weaponFails}/10)`, '#ff5722');
+            }
             ui.render();
         }
     },
 
-    // 升级境界
     upgradeRealm() {
         const nextReq = this.getNextRealmReq();
         if(this.data.spirit >= nextReq) {
@@ -476,7 +504,6 @@ const game = {
                 this.data.layer++;
                 ui.log(`突破至 [${CONFIG.MAJOR_REALMS[this.data.realmIdx].name} ${this.data.layer}层]`, 'green');
             } else {
-                // 渡劫期满 (idx 8, layer 9) 必须渡劫
                 if(this.data.realmIdx === 8 && this.data.layer === 9) return; 
                 this.data.realmIdx++;
                 this.data.layer = 1;
@@ -511,15 +538,23 @@ const game = {
         const thunder = document.getElementById('thunder-vfx');
         const countDisp = document.getElementById('trib-step');
         
+        // 判定条件：功法全满 + 灵根满 + 武器满
         const totalSkills = this.data.skills.length;
         const maxedSkills = this.data.skills.filter(s => s.level >= 100).length;
+        const isRootMax = this.data.rootIdx >= CONFIG.ROOTS.length - 1;
+        const isWeaponMax = this.data.weaponIdx >= CONFIG.WEAPONS.length - 1;
+
         let rate = 0.5;
         
-        if (maxedSkills === totalSkills) {
+        if (maxedSkills === totalSkills && isRootMax && isWeaponMax) {
             rate = 1.1; 
-            log("万法归一，全功法至臻圆满，天道护佑！", "#ffd700");
+            log("检测到：全功法至臻、灵根绝世、法宝通神...", "#ffd700");
+            log("天道避让，此劫必过！", "#ffd700");
         } else {
-            log(`功法未圆满 (${maxedSkills}/${totalSkills})，仅50%存活率...`, "#ff9800");
+            log("根基未臻圆满，生死天定 (成功率 50%)...", "#ff9800");
+            if(maxedSkills < totalSkills) log(`- 功法未全至臻 (${maxedSkills}/${totalSkills})`, "#888");
+            if(!isRootMax) log(`- 灵根未达绝世`, "#888");
+            if(!isWeaponMax) log(`- 法宝未达神器`, "#888");
         }
 
         for(let i=1; i<=100; i++) {
@@ -570,10 +605,8 @@ const game = {
         this.data.spirit = 0;
         this.data.realmIdx = 0;
         this.data.layer = 1;
-        // 轮回不重置灵根和武器 (让它作为永久积累?) 不，重置吧，不然太快了。
-        // 或者保留灵根等级的一半？这里选择重置为凡人，但保留功法等级一半
-        this.data.rootIdx = 0;
-        this.data.weaponIdx = 0;
+        this.data.rootIdx = 0; this.data.rootFails = 0;
+        this.data.weaponIdx = 0; this.data.weaponFails = 0;
         this.data.skills.forEach(s => s.level = Math.floor(s.level * 0.5)); 
         
         document.getElementById('modal-end').classList.add('hidden');
@@ -590,7 +623,6 @@ const ui = {
 
     init() {
         const area = document.getElementById('click-area');
-        
         const start = (e) => {
             if(e.cancelable) e.preventDefault();
             if(game.hold.active) return;
@@ -626,7 +658,6 @@ const ui = {
         const percent = ((diff % 5) / 5) * 100;
         document.getElementById('channel-fill').style.width = percent + '%';
         document.getElementById('channel-text').innerHTML = `吟唱 ${diff.toFixed(1)}s | <span style="color:#ffeb3b; font-weight:bold;">x${game.hold.currentMult}倍</span>`;
-        
         if(index >= 1) {
             const shake = Math.random() * (index * 1.5);
             document.getElementById('avatar').style.transform = `scale(1.05) translate(${shake}px, ${shake}px)`;
@@ -639,7 +670,7 @@ const ui = {
         if(this.skillHoldTimer) clearInterval(this.skillHoldTimer);
         game.upgradeSkill(idx);
         this.renderSkills(); 
-        this.renderCultivate(); // 刷新钱
+        this.renderCultivate(); 
         this.updateSpirit();
         this.skillHoldTimer = setInterval(() => {
             const success = game.upgradeSkill(idx);
@@ -702,26 +733,22 @@ const ui = {
         document.getElementById('player-name').innerText = game.data.name;
         document.getElementById('reincarnate-count').innerText = game.data.reincarnationCount;
         
-        // 渲染灵根和法宝
+        // 渲染灵根和法宝标签
         const root = CONFIG.ROOTS[game.data.rootIdx];
         const weapon = CONFIG.WEAPONS[game.data.weaponIdx];
         const tDisp = document.getElementById('talent-disp');
         tDisp.innerText = root.name;
-        tDisp.className = 'tag-box ' + (game.data.rootIdx >= 6 ? 'tag-god' : '');
+        tDisp.className = 'tag-box ' + (game.data.rootIdx >= 9 ? 'tag-god' : '');
         
         const wDisp = document.getElementById('weapon-disp');
         wDisp.innerText = weapon.name;
-        wDisp.className = 'tag-box ' + (game.data.weaponIdx >= 6 ? 'tag-god' : '');
+        wDisp.className = 'tag-box ' + (game.data.weaponIdx >= 9 ? 'tag-god' : '');
 
         // 渲染境界
         const rName = CONFIG.MAJOR_REALMS[game.data.realmIdx].name;
         const lName = game.data.realmIdx < 9 ? ` ${game.data.layer}层` : "";
         document.getElementById('realm-disp').innerText = rName + lName;
         
-        // 显示当前倍率
-        const totalMult = CONFIG.ROOTS[game.data.rootIdx].mult * CONFIG.WEAPONS[game.data.weaponIdx].mult;
-        document.getElementById('mult-disp').innerText = `x${totalMult.toFixed(1)}`;
-
         this.updateSpirit();
         this.renderSkills();
         this.renderCultivate();
@@ -740,9 +767,7 @@ const ui = {
             const isMax = s.level >= 100;
             
             let displayName = s.name;
-            if(isMax) {
-                displayName = `<span style="color:var(--rare-purple);font-weight:bold;text-shadow:0 0 5px var(--rare-purple)">至臻·${s.name}</span>`;
-            }
+            if(isMax) displayName = `<span style="color:var(--rare-purple);font-weight:bold;text-shadow:0 0 5px var(--rare-purple)">至臻·${s.name}</span>`;
 
             div.innerHTML += `
                 <div class="list-item">
@@ -752,11 +777,9 @@ const ui = {
                         </div>
                         <div style="font-size:0.7rem; color:#666; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${s.desc}</div>
                     </div>
-                    <button class="btn-mini ${isMax?'maxed':''}" 
-                        ${canBuy?'':'disabled'} 
+                    <button class="btn-mini ${isMax?'maxed':''}" ${canBuy?'':'disabled'} 
                         onmousedown="ui.startSkillHold(${i})" onmouseup="ui.endSkillHold()" onmouseleave="ui.endSkillHold()"
-                        ontouchstart="ui.startSkillHold(${i})" ontouchend="ui.endSkillHold()"
-                    >
+                        ontouchstart="ui.startSkillHold(${i})" ontouchend="ui.endSkillHold()">
                         ${isMax ? '突破' : '升级'} <br><span style="font-size:0.6rem">${this.fmt(cost)}</span>
                     </button>
                 </div>
@@ -806,23 +829,25 @@ const ui = {
         // 2. 灵根
         const rIdx = game.data.rootIdx;
         const btnRoot = document.getElementById('btn-root');
+        document.getElementById('pity-root').innerText = `保底 ${game.data.rootFails}/10`;
+        
         if(rIdx >= CONFIG.ROOTS.length - 1) {
             document.getElementById('next-root-name').innerText = "已达极限";
             document.getElementById('root-bonus').innerText = "MAX";
             document.getElementById('req-root').innerText = "-";
             btnRoot.disabled = true;
             btnRoot.innerText = "圆满";
-            btnRoot.classList.remove('active');
+            btnRoot.className = "cultivate-btn-lg";
         } else {
             const nextR = CONFIG.ROOTS[rIdx + 1];
             document.getElementById('next-root-name').innerText = nextR.name;
             document.getElementById('root-bonus').innerText = `+${((nextR.mult-1)*100).toFixed(0)}%`;
             document.getElementById('req-root').innerText = this.fmt(nextR.cost);
             if(game.data.spirit >= nextR.cost) {
-                btnRoot.classList.add('active');
-                btnRoot.innerText = "洗髓伐骨";
+                btnRoot.className = "cultivate-btn-lg active risk"; // 橙色风险按钮
+                btnRoot.innerText = "洗髓伐骨 (60%)";
             } else {
-                btnRoot.classList.remove('active');
+                btnRoot.className = "cultivate-btn-lg";
                 btnRoot.innerText = "灵力不足";
             }
         }
@@ -830,23 +855,25 @@ const ui = {
         // 3. 武器
         const wIdx = game.data.weaponIdx;
         const btnW = document.getElementById('btn-weapon');
+        document.getElementById('pity-weapon').innerText = `保底 ${game.data.weaponFails}/10`;
+
         if(wIdx >= CONFIG.WEAPONS.length - 1) {
             document.getElementById('next-weapon-name').innerText = "神器已成";
             document.getElementById('weapon-bonus').innerText = "MAX";
             document.getElementById('req-weapon').innerText = "-";
             btnW.disabled = true;
             btnW.innerText = "圆满";
-            btnW.classList.remove('active');
+            btnW.className = "cultivate-btn-lg";
         } else {
             const nextW = CONFIG.WEAPONS[wIdx + 1];
             document.getElementById('next-weapon-name').innerText = nextW.name;
             document.getElementById('weapon-bonus').innerText = `x${nextW.mult.toFixed(1)}`;
             document.getElementById('req-weapon').innerText = this.fmt(nextW.cost);
             if(game.data.spirit >= nextW.cost) {
-                btnW.classList.add('active');
-                btnW.innerText = "祭炼法宝";
+                btnW.className = "cultivate-btn-lg active risk";
+                btnW.innerText = "祭炼法宝 (60%)";
             } else {
-                btnW.classList.remove('active');
+                btnW.className = "cultivate-btn-lg";
                 btnW.innerText = "灵力不足";
             }
         }
