@@ -514,7 +514,8 @@
         <div class="modal-box">
             <h2 style="color: #ff3b30; margin-top:0;">渡劫失败</h2>
             <p id="trib-fail-reason" style="color:#bbb; font-size:0.85rem; margin:20px 0; line-height:1.6;"></p>
-            <button class="cultivate-btn-lg active" onclick="game.retryTribulation()">重整旗鼓</button>
+            <button class="cultivate-btn-lg active" onclick="game.retryTribulation()">重整旗鼓 (立即重试)</button>
+            <button class="cultivate-btn-lg" onclick="game.returnToCave()" style="margin-top:10px; background:#333;">暂避锋芒 (返回修炼)</button>
         </div>
     </div>
 
@@ -587,17 +588,17 @@ const CONFIG = {
 // --- 天劫雷谱 ---
 const THUNDER_LORE = [
     { range: [1, 10], name: "凡铁白雷", color: "#ffffff", shadow: "#aaaaaa" },
-    { range: [11, 20], name: "乙木正雷", color: "#76ff03", shadow: "#2e7d32" }, // 绿
-    { range: [21, 30], name: "癸水阴雷", color: "#00b0ff", shadow: "#0277bd" }, // 蓝
-    { range: [31, 40], name: "丙火阳雷", color: "#ff3d00", shadow: "#d50000" }, // 红
-    { range: [41, 50], name: "戊土冥雷", color: "#ffca28", shadow: "#ff6f00" }, // 黄
-    { range: [51, 60], name: "庚金劫雷", color: "#ffd700", shadow: "#ffff00" }, // 金
-    { range: [61, 70], name: "巽风煞雷", color: "#1de9b6", shadow: "#004d40" }, // 青
-    { range: [71, 80], name: "太阴冰雷", color: "#e040fb", shadow: "#aa00ff" }, // 紫
-    { range: [81, 90], name: "六道轮回雷", color: "#ff1744", shadow: "#b71c1c" }, // 血红
-    { range: [91, 95], name: "九天玄刹雷", color: "#000000", shadow: "#ffffff" }, // 黑芯白边
-    { range: [96, 99], name: "紫霄神雷", color: "#d500f9", shadow: "#6200ea" }, // 深紫
-    { range: [100, 100], name: "混沌灭世雷", color: "#ff0000", shadow: "#ff0000" } // 终极红
+    { range: [11, 20], name: "乙木正雷", color: "#76ff03", shadow: "#2e7d32" }, 
+    { range: [21, 30], name: "癸水阴雷", color: "#00b0ff", shadow: "#0277bd" }, 
+    { range: [31, 40], name: "丙火阳雷", color: "#ff3d00", shadow: "#d50000" }, 
+    { range: [41, 50], name: "戊土冥雷", color: "#ffca28", shadow: "#ff6f00" }, 
+    { range: [51, 60], name: "庚金劫雷", color: "#ffd700", shadow: "#ffff00" }, 
+    { range: [61, 70], name: "巽风煞雷", color: "#1de9b6", shadow: "#004d40" }, 
+    { range: [71, 80], name: "太阴冰雷", color: "#e040fb", shadow: "#aa00ff" }, 
+    { range: [81, 90], name: "六道轮回雷", color: "#ff1744", shadow: "#b71c1c" }, 
+    { range: [91, 95], name: "九天玄刹雷", color: "#000000", shadow: "#ffffff" }, 
+    { range: [96, 99], name: "紫霄神雷", color: "#d500f9", shadow: "#6200ea" }, 
+    { range: [100, 100], name: "混沌灭世雷", color: "#ff0000", shadow: "#ff0000" } 
 ];
 
 // --- 100种抵挡理由 ---
@@ -941,6 +942,13 @@ const game = {
         this.startTribulation();
     },
 
+    returnToCave() {
+        document.getElementById('modal-trib-fail').classList.add('hidden');
+        document.getElementById('tribulation-overlay').classList.add('hidden');
+        this.data.isTribulating = false;
+        ui.log("道友暂时压制了境界，返回洞府积蓄实力。", "#ff9800");
+    },
+
     async runTribulation() {
         const consoleEl = document.getElementById('trib-console');
         const thunderEl = document.getElementById('thunder-vfx');
@@ -996,7 +1004,6 @@ const game = {
             } else {
                 hp = Math.max(1, hp - (Math.random() * 2));
                 
-                // 使用100条花式语录
                 const logIndex = (i - 1) % TRIB_LOGS.length;
                 msg = TRIB_LOGS[logIndex];
                 
@@ -1006,10 +1013,10 @@ const game = {
             document.getElementById('trib-hp-bar').style.width = hp + '%';
             document.getElementById('trib-hp-text').innerText = Math.floor(hp) + '%';
 
-            // --- 节奏控制优化 ---
-            let delay = 500; // 默认 0.5s
-            if (i >= 80) delay = 1000; // 80-95道：1s
-            if (i >= 96) delay = 2000; // 最后5道：2s
+            // --- 节奏控制 ---
+            let delay = 500; 
+            if (i >= 80) delay = 1000; 
+            if (i >= 96) delay = 2000; 
 
             await this.sleep(delay);
         }
@@ -1020,7 +1027,7 @@ const game = {
             // 进入心魔问答环节
             await this.runHeartDemonPhase();
         } else {
-            // 渡劫失败（没血了）
+            // 渡劫失败
             this.handleTribFail("肉身无法承受天威，崩解离析！");
         }
     },
@@ -1046,11 +1053,6 @@ const game = {
         `;
         
         ui.createVictoryParticles();
-    },
-
-    handleDeath() {
-        // 废弃，仅作为兜底
-        this.handleTribFail("不明原因陨落");
     },
 
     reincarnate() {
