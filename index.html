@@ -45,31 +45,53 @@
             background: radial-gradient(circle at center, rgba(20,20,30,0.5) 0%, rgba(0,0,0,1) 100%);
         }
 
-        /* --- 上半部：核心点击区 (布局调整) --- */
+        /* --- 悬浮灵力球 (核心修改) --- */
+        #float-spirit {
+            position: fixed;
+            top: 15%; /* 初始位置 */
+            right: 0;
+            z-index: 9999; /* 最顶层 */
+            background: rgba(20, 20, 20, 0.85);
+            border: 1px solid var(--primary-green);
+            /* 初始圆角，靠右时左边圆 */
+            border-radius: 20px 0 0 20px; 
+            border-right: none;
+            padding: 8px 12px 8px 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            display: flex; flex-direction: column; align-items: flex-end;
+            cursor: move;
+            touch-action: none; /* 禁止浏览器默认滚动 */
+            transition: transform 0.1s;
+        }
+        /* 靠左时的样式 */
+        #float-spirit.dock-left {
+            border-radius: 0 20px 20px 0;
+            border-left: none;
+            border-right: 1px solid var(--primary-green);
+            align-items: flex-start;
+            padding: 8px 16px 8px 12px;
+        }
+
+        .spirit-label-float { font-size: 0.65rem; color: #aaa; margin-bottom: 2px; letter-spacing: 1px;}
+        .spirit-val-float { 
+            font-family: 'Courier New', monospace; 
+            font-size: 1.1rem; color: var(--primary-green); font-weight: 800; 
+            text-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
+            white-space: nowrap;
+        }
+
+        /* --- 上半部：核心点击区 --- */
         #click-area {
             height: 40%; 
             position: relative; display: flex; flex-direction: column;
-            justify-content: flex-end; /* 内容靠下，接近手指 */
+            justify-content: flex-end; 
             align-items: center; cursor: pointer;
             transition: background 0.2s; touch-action: manipulation;
             padding-bottom: 30px; 
         }
         #click-area:active { background: rgba(255, 255, 255, 0.03); }
 
-        /* 灵力显示 - 居中置顶 */
-        .spirit-display-area {
-            position: absolute; top: 10%; width: 100%; text-align: center;
-            pointer-events: none;
-        }
-        .spirit-label-xs { font-size: 0.7rem; color: #666; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
-        .spirit-val-main { 
-            font-family: 'Courier New', monospace; 
-            font-size: 2.5rem; color: var(--primary-green); font-weight: 800; 
-            text-shadow: 0 0 20px rgba(0, 230, 118, 0.3);
-            line-height: 1;
-        }
-
-        /* 头像 - 居中 */
         .avatar-container {
             width: 140px; height: 140px; border-radius: 50%;
             border: 2px solid #444;
@@ -92,7 +114,7 @@
             box-shadow: 0 0 15px rgba(255, 193, 7, 0.2); white-space: nowrap;
         }
 
-        /* 进度条与文字 - 居中 */
+        /* 进度条与文字 */
         .channel-container-wrapper {
             width: 70%; display: flex; flex-direction: column; align-items: center; height: 40px; justify-content: center;
         }
@@ -132,7 +154,6 @@
         }
         .tab-content.show { display: block; animation: fadeIn 0.3s; }
 
-        /* 角色卡片 */
         .dashboard-card {
             background: linear-gradient(135deg, #222, #1a1a1a);
             border: 1px solid #333;
@@ -177,13 +198,17 @@
         .btn-upgrade:disabled { border-color: #333; color: #444; }
         .btn-upgrade.maxed { border-color: var(--primary-gold); color: var(--primary-gold); background: rgba(255,215,0,0.05); }
 
+        .cultivate-section { margin-bottom: 15px; border-bottom: 1px dashed #333; padding-bottom: 15px; }
+        .cultivate-header { color: #fff; font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;}
+
         .cultivate-btn-lg {
             width: 100%; padding: 14px; border: none; font-size: 1rem; font-weight: bold; border-radius: 8px; 
             margin-top: 8px; cursor: pointer; touch-action: manipulation;
             background: #222; color: #888;
         }
         .cultivate-btn-lg.active { background: var(--primary-green); color: #000; }
-        .cultivate-btn-lg.active.risk { background: linear-gradient(45deg, #ff9800, #ff5722); color: white; }
+        /* 去掉了 risk 类的特殊颜色提示，统一看起来都一样，增加神秘感 */
+        .cultivate-btn-lg.active.risk { background: var(--primary-green); color: #000; }
         .cultivate-btn-lg.trib { 
             background: linear-gradient(45deg, #d32f2f, #b71c1c); color: #fff; animation: pulse 1.5s infinite; 
             box-shadow: 0 0 20px rgba(211, 47, 47, 0.4);
@@ -194,6 +219,7 @@
             animation: floatUp 0.8s forwards; font-size: 1.4rem; text-shadow: 2px 2px 0 #000; z-index: 100;
         }
 
+        /* 强制隐藏任何可能存在的保底tag */
         .pity-tag { display: none !important; }
 
         #tribulation-overlay {
@@ -229,13 +255,13 @@
 
     <canvas id="bgCanvas" class="bg-canvas"></canvas>
 
+    <div id="float-spirit">
+        <div class="spirit-label-float">天地灵力</div>
+        <div class="spirit-val-float" id="spirit-disp">0</div>
+    </div>
+
     <div id="app">
         <div id="click-area">
-            <div class="spirit-display-area">
-                <div class="spirit-label-xs">天地灵力</div>
-                <div class="spirit-val-main" id="spirit-disp">0</div>
-            </div>
-
             <div class="avatar-container" id="avatar">
                 <div class="meditate-icon">🧘‍♂️</div>
                 <div class="realm-badge" id="realm-disp">炼气期 一层</div>
@@ -280,14 +306,14 @@
             </div>
 
             <div id="tab-cultivate" class="tab-content">
-                <div style="background:#1a1a1a; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid #333;">
+                <div class="cultivate-section">
                     <div class="cultivate-header">
-                        <span>境界突破 <span style="font-size:0.7rem; color:#888;">(成功率80%)</span></span>
+                        <span>境界突破</span>
                         <span id="next-realm-name" style="color:var(--primary-gold)">炼气期 二层</span>
                     </div>
                     <div style="font-size:0.8rem; color:#666; margin-bottom:8px;">所需灵力: <span id="req-realm" style="color:#fff">100</span></div>
                     
-                    <button id="btn-realm" class="cultivate-btn-lg" onclick="game.upgradeRealm()">突破瓶颈 (80%)</button>
+                    <button id="btn-realm" class="cultivate-btn-lg" onclick="game.upgradeRealm()">突破瓶颈</button>
                     <button id="btn-trib" class="cultivate-btn-lg trib hidden" onclick="game.startTribulation()">逆天改命 (百雷天劫)</button>
                     
                     <div id="trib-warn" class="hidden" style="margin-top:10px; background:rgba(255,59,48,0.1); padding:8px; border-radius:4px; border:1px solid rgba(255,59,48,0.3);">
@@ -299,10 +325,9 @@
                     </div>
                 </div>
 
-                <div style="margin-bottom:15px; padding-bottom:15px; border-bottom:1px dashed #333;">
+                <div class="cultivate-section">
                     <div class="cultivate-header">
-                        <span>淬炼灵根 <span style="font-size:0.7rem; color:#888;">(成功率80%)</span></span>
-                        <span id="pity-root" class="pity-tag">保底 0/10</span>
+                        <span>淬炼灵根</span>
                     </div>
                     <div style="font-size:0.8rem; color:#666; margin-bottom:5px; display:flex; justify-content:space-between;">
                         <span>下阶: <span id="next-root-name" style="color:var(--neon-blue)">下品灵根</span></span>
@@ -312,10 +337,9 @@
                     <button id="btn-root" class="cultivate-btn-lg" onclick="game.upgradeRoot()">洗髓伐骨 (赌!)</button>
                 </div>
 
-                <div style="margin-bottom:15px;">
+                <div class="cultivate-section" style="border:none;">
                     <div class="cultivate-header">
-                        <span>祭炼法宝 <span style="font-size:0.7rem; color:#888;">(成功率80%)</span></span>
-                        <span id="pity-weapon" class="pity-tag">保底 0/10</span>
+                        <span>祭炼法宝</span>
                     </div>
                     <div style="font-size:0.8rem; color:#666; margin-bottom:5px; display:flex; justify-content:space-between;">
                         <span>下阶: <span id="next-weapon-name" style="color:var(--rare-purple)">木剑</span></span>
@@ -382,7 +406,6 @@ const CONFIG = {
         { name: "渡劫期", baseReq: 500000000000000, exp: 2.3 }, 
         { name: "陆地真仙", baseReq: 0, exp: 1 }
     ],
-    // 灵根：10的N次方倍率
     ROOTS: [
         { name: "凡品废灵根", mult: 1, cost: 0, tag: '凡品' },
         { name: "下品灵根", mult: 10, cost: 1000, tag: '下品' },
@@ -395,7 +418,6 @@ const CONFIG = {
         { name: "仙灵根", mult: 100000000, cost: 10000000000000, tag: '仙品' },
         { name: "绝世无双", mult: 1000000000, cost: 999999999999999, tag: '绝世' } 
     ],
-    // 法宝：10的N次方倍率
     WEAPONS: [
         { name: "破树枝", mult: 1, cost: 0, tag: '凡铁' },
         { name: "生锈铁剑", mult: 10, cost: 5000, tag: '凡铁' },
@@ -746,6 +768,77 @@ const ui = {
         document.addEventListener('mouseup', end);
         document.addEventListener('touchend', end);
         
+        // --- 悬浮球拖拽逻辑 ---
+        const ball = document.getElementById('float-spirit');
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+
+        const onDragStart = (e) => {
+            isDragging = true;
+            ball.style.transition = 'none'; // 拖动时移除过渡
+            const touch = e.touches ? e.touches[0] : e;
+            startX = touch.clientX;
+            startY = touch.clientY;
+            initialLeft = ball.getBoundingClientRect().left;
+            initialTop = ball.getBoundingClientRect().top;
+            e.preventDefault(); 
+        };
+
+        const onDragMove = (e) => {
+            if (!isDragging) return;
+            const touch = e.touches ? e.touches[0] : e;
+            const dx = touch.clientX - startX;
+            const dy = touch.clientY - startY;
+            ball.style.left = `${initialLeft + dx}px`;
+            ball.style.top = `${initialTop + dy}px`;
+            ball.style.right = 'auto'; // 清除right属性
+        };
+
+        const onDragEnd = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            ball.style.transition = 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)'; // 恢复过渡效果
+
+            const rect = ball.getBoundingClientRect();
+            const screenW = window.innerWidth;
+            const screenH = window.innerHeight;
+
+            // 左右吸附逻辑
+            if (rect.left + rect.width / 2 < screenW / 2) {
+                // 吸附到左边
+                ball.style.left = '0px';
+                ball.style.right = 'auto';
+                ball.classList.add('dock-left');
+                ball.style.borderRadius = "0 20px 20px 0";
+                ball.style.borderLeft = "none";
+                ball.style.borderRight = "1px solid var(--primary-green)";
+                ball.style.alignItems = "flex-start";
+            } else {
+                // 吸附到右边
+                ball.style.left = (screenW - rect.width) + 'px'; // 设为绝对left防止right定位冲突
+                ball.classList.remove('dock-left');
+                ball.style.borderRadius = "20px 0 0 20px";
+                ball.style.borderRight = "none";
+                ball.style.borderLeft = "1px solid var(--primary-green)";
+                ball.style.alignItems = "flex-end";
+            }
+
+            // 上下边界限制 (留出上下安全距离)
+            let newTop = parseInt(ball.style.top);
+            if (newTop < 50) newTop = 50;
+            if (newTop > screenH - 100) newTop = screenH - 100;
+            ball.style.top = newTop + 'px';
+        };
+
+        ball.addEventListener('mousedown', onDragStart);
+        ball.addEventListener('touchstart', onDragStart, {passive:false});
+        
+        window.addEventListener('mousemove', onDragMove);
+        window.addEventListener('touchmove', onDragMove, {passive:false});
+        
+        window.addEventListener('mouseup', onDragEnd);
+        window.addEventListener('touchend', onDragEnd);
+
         this.render();
     },
 
@@ -917,7 +1010,7 @@ const ui = {
                 tribWarn.classList.add('hidden');
                 if(game.data.spirit >= nextReq) {
                     btnU.className = "cultivate-btn-lg active risk"; 
-                    btnU.innerText = "突破瓶颈 (80%)";
+                    btnU.innerText = "突破瓶颈"; 
                 } else {
                     btnU.className = "cultivate-btn-lg";
                     btnU.innerText = "积攒灵力中...";
@@ -942,7 +1035,7 @@ const ui = {
             document.getElementById('req-root').innerText = this.fmt(nextR.cost);
             if(game.data.spirit >= nextR.cost) {
                 btnRoot.className = "cultivate-btn-lg active risk"; 
-                btnRoot.innerText = "洗髓伐骨 (80%)";
+                btnRoot.innerText = "洗髓伐骨"; 
             } else {
                 btnRoot.className = "cultivate-btn-lg";
                 btnRoot.innerText = "灵力不足";
@@ -966,7 +1059,7 @@ const ui = {
             document.getElementById('req-weapon').innerText = this.fmt(nextW.cost);
             if(game.data.spirit >= nextW.cost) {
                 btnW.className = "cultivate-btn-lg active risk";
-                btnW.innerText = "祭炼法宝 (80%)";
+                btnW.innerText = "祭炼法宝"; 
             } else {
                 btnW.className = "cultivate-btn-lg";
                 btnW.innerText = "灵力不足";
