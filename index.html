@@ -9,7 +9,7 @@
            CSS 样式表
            ========================================= */
         :root {
-            --bg-color: #000;
+            --bg-color: #050505;
             --panel-bg: #111;
             --card-bg: rgba(30, 30, 40, 0.6);
             --primary-gold: #ffc107;
@@ -39,56 +39,48 @@
 
         .bg-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
+        /* 特效层 */
+        #vfx-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 9000; pointer-events: none; overflow: hidden;
+        }
+
         #app {
             position: relative; z-index: 10; width: 100%; max-width: 600px; height: 100%;
             display: flex; flex-direction: column;
             background: radial-gradient(circle at center, rgba(20,20,30,0.5) 0%, rgba(0,0,0,1) 100%);
+            transition: transform 0.1s; /* 用于震动效果 */
         }
 
-        /* --- 悬浮灵力球 (核心修改) --- */
+        /* --- 悬浮灵力球 --- */
         #float-spirit {
             position: fixed;
-            top: 15%; /* 初始位置 */
-            right: 0;
-            z-index: 9999; /* 最顶层 */
-            background: rgba(20, 20, 20, 0.85);
+            top: 15%; right: 0; z-index: 9999;
+            background: rgba(20, 20, 20, 0.9);
             border: 1px solid var(--primary-green);
-            /* 初始圆角，靠右时左边圆 */
-            border-radius: 20px 0 0 20px; 
-            border-right: none;
+            border-radius: 20px 0 0 20px; border-right: none;
             padding: 8px 12px 8px 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
             display: flex; flex-direction: column; align-items: flex-end;
-            cursor: move;
-            touch-action: none; /* 禁止浏览器默认滚动 */
-            transition: transform 0.1s;
+            cursor: move; touch-action: none; transition: transform 0.1s;
         }
-        /* 靠左时的样式 */
         #float-spirit.dock-left {
-            border-radius: 0 20px 20px 0;
-            border-left: none;
-            border-right: 1px solid var(--primary-green);
-            align-items: flex-start;
-            padding: 8px 16px 8px 12px;
+            border-radius: 0 20px 20px 0; border-left: none; border-right: 1px solid var(--primary-green);
+            align-items: flex-start; padding: 8px 16px 8px 12px;
         }
-
         .spirit-label-float { font-size: 0.65rem; color: #aaa; margin-bottom: 2px; letter-spacing: 1px;}
         .spirit-val-float { 
             font-family: 'Courier New', monospace; 
             font-size: 1.1rem; color: var(--primary-green); font-weight: 800; 
-            text-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
-            white-space: nowrap;
+            text-shadow: 0 0 10px rgba(0, 230, 118, 0.3); white-space: nowrap;
         }
 
-        /* --- 上半部：核心点击区 --- */
+        /* --- 核心点击区 --- */
         #click-area {
-            height: 40%; 
-            position: relative; display: flex; flex-direction: column;
-            justify-content: flex-end; 
-            align-items: center; cursor: pointer;
-            transition: background 0.2s; touch-action: manipulation;
-            padding-bottom: 30px; 
+            height: 40%; position: relative; display: flex; flex-direction: column;
+            justify-content: flex-end; align-items: center; cursor: pointer;
+            transition: background 0.2s; touch-action: manipulation; padding-bottom: 30px; 
         }
         #click-area:active { background: rgba(255, 255, 255, 0.03); }
 
@@ -114,26 +106,19 @@
             box-shadow: 0 0 15px rgba(255, 193, 7, 0.2); white-space: nowrap;
         }
 
-        /* 进度条与文字 */
-        .channel-container-wrapper {
-            width: 70%; display: flex; flex-direction: column; align-items: center; height: 40px; justify-content: center;
-        }
+        .channel-container-wrapper { width: 70%; display: flex; flex-direction: column; align-items: center; height: 40px; justify-content: center; }
         .channel-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; opacity: 0; margin-bottom: 8px;}
         .channel-bar.active { opacity: 1; }
         .channel-fill { height: 100%; background: var(--neon-blue); width: 0%; border-radius: 3px; box-shadow: 0 0 10px var(--neon-blue); }
-        
         .hint-text { color: #555; font-size: 0.8rem; transition: color 0.2s; }
         .hint-text.active { color: var(--neon-blue); font-weight: bold; text-shadow: 0 0 5px var(--neon-blue); }
 
-        /* --- 下半部：大面板 --- */
+        /* --- 下半部：面板 --- */
         #panel-container { 
-            flex: 1; 
-            background: var(--panel-bg); 
-            border-top: 1px solid #222; 
-            border-radius: 20px 20px 0 0;
+            flex: 1; background: var(--panel-bg); 
+            border-top: 1px solid #222; border-radius: 20px 20px 0 0;
             display: flex; flex-direction: column;
-            box-shadow: 0 -5px 30px rgba(0,0,0,0.8);
-            overflow: hidden;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.8); overflow: hidden;
         }
         
         .tabs { display: flex; background: rgba(0,0,0,0.3); border-bottom: 1px solid #222; padding: 0 10px; }
@@ -147,22 +132,14 @@
             background: var(--primary-gold); border-radius: 3px 3px 0 0; box-shadow: 0 -2px 10px rgba(255, 193, 7, 0.5);
         }
 
-        .tab-content { 
-            flex: 1; overflow-y: auto; padding: 15px; 
-            padding-bottom: 80px; 
-            display: none; -webkit-overflow-scrolling: touch; 
-        }
+        .tab-content { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 80px; display: none; -webkit-overflow-scrolling: touch; }
         .tab-content.show { display: block; animation: fadeIn 0.3s; }
 
         .dashboard-card {
             background: linear-gradient(135deg, #222, #1a1a1a);
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            border: 1px solid #333; border-radius: 12px;
+            padding: 15px; margin-bottom: 20px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
         .dash-row { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 8px; }
@@ -205,10 +182,17 @@
             width: 100%; padding: 14px; border: none; font-size: 1rem; font-weight: bold; border-radius: 8px; 
             margin-top: 8px; cursor: pointer; touch-action: manipulation;
             background: #222; color: #888;
+            transition: all 0.1s;
         }
-        .cultivate-btn-lg.active { background: var(--primary-green); color: #000; }
-        /* 去掉了 risk 类的特殊颜色提示，统一看起来都一样，增加神秘感 */
-        .cultivate-btn-lg.active.risk { background: var(--primary-green); color: #000; }
+        .cultivate-btn-lg:active { transform: scale(0.97); }
+        .cultivate-btn-lg.active { background: var(--primary-green); color: #000; box-shadow: 0 4px 0 #00b359; }
+        .cultivate-btn-lg.active:active { box-shadow: 0 0 0; transform: translateY(4px); }
+        
+        .cultivate-btn-lg.active.risk { 
+            background: linear-gradient(135deg, #ff9800, #ff5722); color: white; box-shadow: 0 4px 0 #bf360c;
+        }
+        .cultivate-btn-lg.active.risk:active { box-shadow: 0 0 0; transform: translateY(4px); }
+
         .cultivate-btn-lg.trib { 
             background: linear-gradient(45deg, #d32f2f, #b71c1c); color: #fff; animation: pulse 1.5s infinite; 
             box-shadow: 0 0 20px rgba(211, 47, 47, 0.4);
@@ -219,8 +203,23 @@
             animation: floatUp 0.8s forwards; font-size: 1.4rem; text-shadow: 2px 2px 0 #000; z-index: 100;
         }
 
-        /* 强制隐藏任何可能存在的保底tag */
         .pity-tag { display: none !important; }
+
+        /* 特效动画 */
+        .particle {
+            position: absolute; width: 6px; height: 6px; border-radius: 50%;
+            pointer-events: none; opacity: 1;
+        }
+        @keyframes particleFly { 
+            0% { transform: translate(0, 0) scale(1); opacity: 1; } 
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } 
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake-anim { animation: shake 0.4s; }
 
         #tribulation-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -254,6 +253,7 @@
 <body>
 
     <canvas id="bgCanvas" class="bg-canvas"></canvas>
+    <div id="vfx-layer"></div>
 
     <div id="float-spirit">
         <div class="spirit-label-float">天地灵力</div>
@@ -308,7 +308,7 @@
             <div id="tab-cultivate" class="tab-content">
                 <div class="cultivate-section">
                     <div class="cultivate-header">
-                        <span>境界突破</span>
+                        <span>境界突破 <span style="font-size:0.7rem; color:#888;">(70%)</span></span>
                         <span id="next-realm-name" style="color:var(--primary-gold)">炼气期 二层</span>
                     </div>
                     <div style="font-size:0.8rem; color:#666; margin-bottom:8px;">所需灵力: <span id="req-realm" style="color:#fff">100</span></div>
@@ -327,7 +327,7 @@
 
                 <div class="cultivate-section">
                     <div class="cultivate-header">
-                        <span>淬炼灵根</span>
+                        <span>淬炼灵根 <span style="font-size:0.7rem; color:#888;">(30%)</span></span>
                     </div>
                     <div style="font-size:0.8rem; color:#666; margin-bottom:5px; display:flex; justify-content:space-between;">
                         <span>下阶: <span id="next-root-name" style="color:var(--neon-blue)">下品灵根</span></span>
@@ -339,7 +339,7 @@
 
                 <div class="cultivate-section" style="border:none;">
                     <div class="cultivate-header">
-                        <span>祭炼法宝</span>
+                        <span>祭炼法宝 <span style="font-size:0.7rem; color:#888;">(30%)</span></span>
                     </div>
                     <div style="font-size:0.8rem; color:#666; margin-bottom:5px; display:flex; justify-content:space-between;">
                         <span>下阶: <span id="next-weapon-name" style="color:var(--rare-purple)">木剑</span></span>
@@ -369,7 +369,6 @@
         <div class="thunder-bolt" id="thunder-vfx"></div>
         <div style="z-index: 2002; text-align: center; width: 85%;">
             <h1 style="color: #ffeb3b; text-shadow: 0 0 20px red; font-size:2.5rem; margin:0 0 20px 0;">天劫降临</h1>
-            
             <div style="display:flex; justify-content:space-between; width:100%; margin-bottom:5px; font-size:0.8rem; color:#aaa;">
                 <span>护体灵光</span>
                 <span id="trib-hp-text">100%</span>
@@ -377,9 +376,7 @@
             <div style="width:100%; background:#333; height:8px; border-radius:4px; margin-bottom:20px; overflow:hidden;">
                 <div id="trib-hp-bar" style="width:100%; height:100%; background:linear-gradient(90deg, #00e676, #69f0ae); transition: width 0.1s;"></div>
             </div>
-
             <h2 id="trib-step" style="color: white; font-family: monospace; font-size:1.5rem; margin-bottom:20px;">准备抗劫</h2>
-            
             <div id="trib-console" style="height: 160px; overflow-y: scroll; background: rgba(0,0,0,0.5); border: 1px solid #444; padding: 15px; font-size: 0.75rem; text-align: left; border-radius:8px;"></div>
         </div>
     </div>
@@ -465,7 +462,8 @@ const game = {
         reincarnationCount: 0,
         isTribulating: false,
         rootFails: 0,
-        weaponFails: 0
+        weaponFails: 0,
+        realmFails: 0
     },
     
     hold: { active: false, startTime: 0, timer: null, currentMult: 1 },
@@ -551,69 +549,90 @@ const game = {
         return false;
     },
 
-    // 灵根升级：80% 概率
+    // 灵根升级：30%概率，20次保底
     upgradeRoot() {
         if(this.data.rootIdx >= CONFIG.ROOTS.length - 1) return;
         const next = CONFIG.ROOTS[this.data.rootIdx + 1];
         if(this.data.spirit >= next.cost) {
             this.data.spirit -= next.cost;
+            const btn = document.getElementById('btn-root');
+            const rect = btn.getBoundingClientRect();
             
-            // 80% 概率 或者 保底10次
-            const success = (Math.random() < 0.8) || (this.data.rootFails >= 9);
+            const success = (Math.random() < 0.3) || (this.data.rootFails >= 19);
             
             if(success) {
                 this.data.rootIdx++;
                 this.data.rootFails = 0;
-                ui.log(`洗髓成功！灵根进阶为 [${next.name}]！`, 'neon-blue');
+                ui.createExplosion(rect.left + rect.width/2, rect.top + rect.height/2, '#00e676');
+                ui.log(`洗髓成功！灵根进阶为 [${next.name}]！`, 'var(--primary-green)');
             } else {
                 this.data.rootFails++;
-                ui.log(`洗髓失败，气血翻涌...`, '#ff5722');
+                ui.shakeApp();
+                ui.log(`洗髓失败，气血翻涌...`, '#ff3b30');
             }
             ui.render();
         }
     },
 
-    // 法宝升级：80% 概率
+    // 法宝升级：30%概率，20次保底
     upgradeWeapon() {
         if(this.data.weaponIdx >= CONFIG.WEAPONS.length - 1) return;
         const next = CONFIG.WEAPONS[this.data.weaponIdx + 1];
         if(this.data.spirit >= next.cost) {
             this.data.spirit -= next.cost;
-            
-            // 80% 概率 或者 保底10次
-            const success = (Math.random() < 0.8) || (this.data.weaponFails >= 9);
+            const btn = document.getElementById('btn-weapon');
+            const rect = btn.getBoundingClientRect();
+
+            const success = (Math.random() < 0.3) || (this.data.weaponFails >= 19);
             
             if(success) {
                 this.data.weaponIdx++;
                 this.data.weaponFails = 0;
-                ui.log(`祭炼成功！法宝晋升为 [${next.name}]！`, 'rare-purple');
+                ui.createExplosion(rect.left + rect.width/2, rect.top + rect.height/2, '#e040fb');
+                ui.log(`祭炼成功！法宝晋升为 [${next.name}]！`, 'var(--rare-purple)');
             } else {
                 this.data.weaponFails++;
-                ui.log(`祭炼失败，灵材损毁...`, '#ff5722');
+                ui.shakeApp();
+                ui.log(`祭炼失败，灵材损毁...`, '#ff3b30');
             }
             ui.render();
         }
     },
 
-    // 境界突破：现在也有 80% 概率（天劫除外）
+    // 境界突破：70%概率，5次保底，失败掉级
     upgradeRealm() {
         const nextReq = this.getNextRealmReq();
         if(this.data.spirit >= nextReq) {
             this.data.spirit -= nextReq;
+            const btn = document.getElementById('btn-realm');
+            const rect = btn.getBoundingClientRect();
             
-            // 增加 80% 判定
-            if(Math.random() < 0.8) {
+            // 保底5次
+            const success = (Math.random() < 0.7) || (this.data.realmFails >= 4);
+            
+            if(success) {
+                this.data.realmFails = 0;
                 if(this.data.layer < 9) {
                     this.data.layer++;
-                    ui.log(`突破至 [${CONFIG.MAJOR_REALMS[this.data.realmIdx].name} ${this.data.layer}层]`, 'green');
+                    ui.createExplosion(rect.left + rect.width/2, rect.top + rect.height/2, '#ffc107');
+                    ui.log(`突破至 [${CONFIG.MAJOR_REALMS[this.data.realmIdx].name} ${this.data.layer}层]`, 'var(--primary-gold)');
                 } else {
                     if(this.data.realmIdx === 8 && this.data.layer === 9) return; 
                     this.data.realmIdx++;
                     this.data.layer = 1;
-                    ui.log(`=== 晋升 [${CONFIG.MAJOR_REALMS[this.data.realmIdx].name}] ===`, 'gold');
+                    ui.createExplosion(rect.left + rect.width/2, rect.top + rect.height/2, '#ff5722');
+                    ui.log(`=== 晋升 [${CONFIG.MAJOR_REALMS[this.data.realmIdx].name}] ===`, 'var(--god-tier)');
                 }
             } else {
-                ui.log("突破瓶颈失败，灵力逸散...", "#ff3b30");
+                this.data.realmFails++;
+                // 掉级惩罚 (最少掉到1层)
+                if(this.data.layer > 1) {
+                    this.data.layer--;
+                    ui.log("突破失败，境界跌落至" + this.data.layer + "层!", "#ff3b30");
+                } else {
+                    ui.log("突破失败，根基不稳!", "#ff3b30");
+                }
+                ui.shakeApp();
             }
             ui.render();
         }
@@ -725,6 +744,7 @@ const game = {
         this.data.layer = 1;
         this.data.rootIdx = 0; this.data.rootFails = 0;
         this.data.weaponIdx = 0; this.data.weaponFails = 0;
+        this.data.realmFails = 0;
         this.data.skills.forEach(s => s.level = Math.floor(s.level * 0.5)); 
         
         document.getElementById('modal-end').classList.add('hidden');
@@ -775,7 +795,7 @@ const ui = {
 
         const onDragStart = (e) => {
             isDragging = true;
-            ball.style.transition = 'none'; // 拖动时移除过渡
+            ball.style.transition = 'none';
             const touch = e.touches ? e.touches[0] : e;
             startX = touch.clientX;
             startY = touch.clientY;
@@ -791,21 +811,19 @@ const ui = {
             const dy = touch.clientY - startY;
             ball.style.left = `${initialLeft + dx}px`;
             ball.style.top = `${initialTop + dy}px`;
-            ball.style.right = 'auto'; // 清除right属性
+            ball.style.right = 'auto'; 
         };
 
         const onDragEnd = () => {
             if (!isDragging) return;
             isDragging = false;
-            ball.style.transition = 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)'; // 恢复过渡效果
+            ball.style.transition = 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
 
             const rect = ball.getBoundingClientRect();
             const screenW = window.innerWidth;
             const screenH = window.innerHeight;
 
-            // 左右吸附逻辑
             if (rect.left + rect.width / 2 < screenW / 2) {
-                // 吸附到左边
                 ball.style.left = '0px';
                 ball.style.right = 'auto';
                 ball.classList.add('dock-left');
@@ -814,16 +832,13 @@ const ui = {
                 ball.style.borderRight = "1px solid var(--primary-green)";
                 ball.style.alignItems = "flex-start";
             } else {
-                // 吸附到右边
-                ball.style.left = (screenW - rect.width) + 'px'; // 设为绝对left防止right定位冲突
+                ball.style.left = (screenW - rect.width) + 'px'; 
                 ball.classList.remove('dock-left');
                 ball.style.borderRadius = "20px 0 0 20px";
                 ball.style.borderRight = "none";
                 ball.style.borderLeft = "1px solid var(--primary-green)";
                 ball.style.alignItems = "flex-end";
             }
-
-            // 上下边界限制 (留出上下安全距离)
             let newTop = parseInt(ball.style.top);
             if (newTop < 50) newTop = 50;
             if (newTop > screenH - 100) newTop = screenH - 100;
@@ -832,10 +847,8 @@ const ui = {
 
         ball.addEventListener('mousedown', onDragStart);
         ball.addEventListener('touchstart', onDragStart, {passive:false});
-        
         window.addEventListener('mousemove', onDragMove);
         window.addEventListener('touchmove', onDragMove, {passive:false});
-        
         window.addEventListener('mouseup', onDragEnd);
         window.addEventListener('touchend', onDragEnd);
 
@@ -917,6 +930,37 @@ const ui = {
         ctx.arc(x, y, 6, 0, Math.PI*2);
         ctx.fill();
         setTimeout(()=> ctx.clearRect(0,0,canvas.width,canvas.height), 150);
+    },
+
+    // --- 特效系统 ---
+    createExplosion(x, y, color) {
+        const container = document.getElementById('vfx-layer');
+        for (let i = 0; i < 20; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.backgroundColor = color;
+            p.style.left = x + 'px';
+            p.style.top = y + 'px';
+            
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = Math.random() * 80 + 20;
+            const tx = Math.cos(angle) * velocity + 'px';
+            const ty = Math.sin(angle) * velocity + 'px';
+            
+            p.style.setProperty('--tx', tx);
+            p.style.setProperty('--ty', ty);
+            p.style.animation = 'particleFly 0.6s ease-out forwards';
+            
+            container.appendChild(p);
+            setTimeout(() => p.remove(), 600);
+        }
+    },
+
+    shakeApp() {
+        const app = document.getElementById('app');
+        app.classList.remove('shake-anim');
+        void app.offsetWidth; // trigger reflow
+        app.classList.add('shake-anim');
     },
 
     render() {
