@@ -3,908 +3,767 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>无尽修仙：轮回转世</title>
+    <title>琉璃仙途：液态修仙</title>
     <style>
         /* =========================================
-           CSS 样式表 - 视觉核心
+           CSS 样式表 - 液态玻璃风格
            ========================================= */
         :root {
-            --bg-color: #0b0f19;
-            --panel-bg: rgba(18, 25, 40, 0.95);
-            --primary-gold: #ffd700;
-            --primary-green: #00ff9d;
-            --danger-red: #ff4757;
-            --rare-purple: #bd00ff;
-            --text-main: #e2e8f0;
-            --text-dim: #94a3b8;
-            --border-color: #2d3748;
-            --shadow-glow: 0 0 15px rgba(0, 255, 157, 0.2);
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            --text-main: #ffffff;
+            --text-dim: #e2e8f0;
+            --primary-accent: #00d2ff;
+            --danger: #ff416c;
+            --gold: #f6d365;
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
 
         body {
             margin: 0; padding: 0;
-            background-color: var(--bg-color);
+            background: var(--bg-gradient);
             color: var(--text-main);
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            font-family: 'PingFang SC', 'Heiti SC', sans-serif;
             overflow: hidden;
             height: 100vh;
             display: flex;
             justify-content: center;
+            align-items: center;
         }
 
-        /* 背景动态星空 */
-        .bg-canvas {
+        /* 动态流动背景球 */
+        .blobs {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
+            overflow: hidden;
             z-index: 0;
             pointer-events: none;
         }
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: float 10s infinite ease-in-out alternate;
+        }
+        .blob:nth-child(1) { width: 300px; height: 300px; background: #ff416c; top: -50px; left: -50px; }
+        .blob:nth-child(2) { width: 400px; height: 400px; background: #00d2ff; bottom: -100px; right: -50px; animation-duration: 15s; }
+        .blob:nth-child(3) { width: 200px; height: 200px; background: #f6d365; top: 40%; left: 40%; animation-duration: 12s; }
 
-        /* 主容器 */
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 50px) scale(1.1); }
+        }
+
+        /* 主容器 - 磨砂玻璃 */
         #app {
             position: relative;
             z-index: 10;
             width: 100%;
-            max-width: 600px;
-            height: 100%;
+            max-width: 500px;
+            height: 95vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
             display: flex;
             flex-direction: column;
-            background: radial-gradient(circle at center, rgba(30,41,59,0.5) 0%, rgba(15,23,42,1) 100%);
-        }
-
-        /* --- 模态框 (起名/死亡) --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.95);
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            backdrop-filter: blur(5px);
-            transition: opacity 0.5s;
-        }
-        .hidden { display: none !important; opacity: 0; pointer-events: none; }
-
-        .modal-content {
-            background: var(--panel-bg);
-            border: 1px solid var(--primary-gold);
-            padding: 40px;
-            border-radius: 12px;
-            text-align: center;
-            width: 80%;
-            max-width: 400px;
-            box-shadow: 0 0 50px rgba(255, 215, 0, 0.2);
-            animation: slideIn 0.5s ease-out;
-        }
-
-        .input-group input {
-            background: rgba(0,0,0,0.5);
-            border: 1px solid var(--border-color);
-            color: var(--primary-gold);
-            padding: 15px;
-            width: 100%;
-            font-size: 1.2rem;
-            border-radius: 6px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .btn-start {
-            background: linear-gradient(45deg, #d4af37, #f7dc6f);
-            color: #000;
-            border: none;
-            padding: 12px 40px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .btn-start:active { transform: scale(0.95); }
-
-        /* --- 顶部信息栏 --- */
-        header {
-            padding: 15px;
-            border-bottom: 1px solid var(--border-color);
-            background: rgba(11, 15, 25, 0.9);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-
-        .player-info h1 { margin: 0; font-size: 1.2rem; color: var(--primary-gold); }
-        .player-info p { margin: 5px 0 0; font-size: 0.8rem; color: var(--text-dim); }
-        
-        .resource-box {
-            text-align: right;
-        }
-        .spirit-point {
-            font-family: 'Courier New', monospace;
-            font-size: 1.4rem;
-            color: var(--primary-green);
-            text-shadow: 0 0 10px rgba(0,255,157,0.5);
-        }
-        .cps-text { font-size: 0.7rem; color: #64748b; }
-
-        /* --- 游戏主视窗 (点击区) --- */
-        #click-area {
-            flex: 1;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
             overflow: hidden;
         }
 
-        .avatar-container {
-            width: 200px; height: 200px;
-            border-radius: 50%;
-            border: 4px solid var(--border-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            transition: all 0.3s;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%231e293b" opacity="0.5"/></svg>');
-        }
-
-        .avatar-container.meditating {
-            box-shadow: 0 0 50px var(--primary-green);
-            border-color: var(--primary-green);
-            transform: scale(1.05);
-        }
-
-        .realm-label {
-            position: absolute;
-            bottom: -20px;
-            background: #000;
-            border: 1px solid var(--primary-gold);
-            color: var(--primary-gold);
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            z-index: 5;
-        }
-
-        /* 点击产生的浮动文字 */
-        .float-text {
-            position: absolute;
-            color: #fff;
-            font-weight: bold;
-            pointer-events: none;
-            animation: floatUp 1s forwards;
-            font-size: 1.2rem;
-            text-shadow: 1px 1px 2px black;
-        }
-
-        /* --- 功能面板区 --- */
-        #panel-container {
-            height: 45%;
-            background: var(--panel-bg);
-            border-top: 2px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .tabs {
-            display: flex;
-            background: rgba(0,0,0,0.3);
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 15px;
-            background: transparent;
-            border: none;
-            color: var(--text-dim);
-            border-bottom: 2px solid transparent;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        .tab-btn.active {
-            color: var(--primary-gold);
-            border-bottom-color: var(--primary-gold);
-            background: rgba(255, 215, 0, 0.05);
-        }
-
-        .tab-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: none;
-        }
-        .tab-content.show { display: block; }
-
-        /* 列表项样式 */
-        .list-item {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 8px;
+        /* 顶部栏 */
+        header {
+            padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .item-info h4 { margin: 0 0 5px 0; font-size: 1rem; color: #e2e8f0; }
-        .item-info .max-tag {
-            background: var(--rare-purple);
-            color: white;
-            padding: 1px 5px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-right: 5px;
-            display: none;
-        }
-        .item-desc { font-size: 0.75rem; color: #64748b; }
-        
-        .upgrade-btn {
-            background: #1e293b;
-            color: var(--primary-green);
-            border: 1px solid var(--primary-green);
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-        .upgrade-btn:disabled {
-            border-color: #475569;
-            color: #475569;
-            cursor: not-allowed;
-        }
-        .upgrade-btn.maxed {
-            border-color: var(--primary-gold);
-            color: var(--primary-gold);
-            background: transparent;
-        }
+        .player-card h1 { margin: 0; font-size: 1.2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .player-card p { margin: 5px 0 0; font-size: 0.8rem; color: var(--text-dim); opacity: 0.8; }
+        .spirit-box { text-align: right; }
+        .spirit-val { font-size: 1.5rem; font-weight: bold; font-family: monospace; color: var(--primary-accent); }
 
-        /* 渡劫按钮 */
-        #tribulation-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(to right, #b91c1c, #ef4444);
-            color: white;
-            border: none;
-            font-weight: bold;
-            font-size: 1.1rem;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
-            display: none; /* 默认隐藏，满足条件显示 */
-            animation: pulse 2s infinite;
-        }
-
-        /* --- 渡劫覆盖层 (全屏特效) --- */
-        #tribulation-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 2000;
+        /* 中间点击/长按区 */
+        #meditate-area {
+            flex: 1;
+            position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            cursor: pointer;
         }
         
-        .thunder-bolt {
-            position: absolute;
-            top: 0; left: 50%;
-            width: 10px; height: 100%;
-            background: #fff;
-            box-shadow: 0 0 50px #fff, 0 0 100px violet;
-            transform: translateX(-50%) scaleY(0);
-            transform-origin: top;
-            opacity: 0;
+        /* 液态球 (头像) */
+        .liquid-avatar {
+            width: 180px; height: 180px;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.5), 0 10px 20px rgba(0,0,0,0.2);
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4rem;
+            position: relative;
+            animation: morph 6s linear infinite;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: transform 0.1s;
+        }
+        
+        .liquid-avatar.holding {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px var(--primary-accent);
+            background: radial-gradient(circle at 30% 30%, #fff, #00d2ff);
+            animation-duration: 1s; /* 加速蠕动 */
         }
 
-        .tribulation-status {
-            z-index: 2001;
-            text-align: center;
-            color: #fff;
+        @keyframes morph {
+            0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+            34% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
+            67% { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
         }
-        .tribulation-log {
-            height: 150px;
-            width: 80%;
-            overflow-y: scroll;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #555;
-            padding: 10px;
+
+        .realm-badge {
             margin-top: 20px;
-            font-family: monospace;
-            text-align: left;
+            padding: 8px 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
             font-size: 0.9rem;
-        }
-        .log-line { margin-bottom: 5px; opacity: 0; animation: fadeIn 0.2s forwards; }
-        .log-danger { color: #ff4757; }
-        .log-success { color: #2ed573; }
-        .log-info { color: #70a1ff; }
-
-        /* --- 动画关键帧 --- */
-        @keyframes floatUp {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
-        }
-        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { opacity: 1; } }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-        .shaking { animation: shake 0.5s; }
-        
-        .thunder-anim { animation: strike 0.2s; }
-        @keyframes strike {
-            0% { transform: translateX(-50%) scaleY(0); opacity: 1; }
-            50% { transform: translateX(-50%) scaleY(1); opacity: 1; }
-            100% { transform: translateX(-50%) scaleY(1); opacity: 0; }
+            letter-spacing: 1px;
         }
 
-        /* 极品字体样式 */
-        .jp-title {
-            background: linear-gradient(to right, #bd00ff, #ff0055);
-            -webkit-background-clip: text;
-            color: transparent;
-            font-weight: bold;
+        .tip-text {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            opacity: 0.6;
+            animation: fadeInOut 2s infinite;
         }
+        @keyframes fadeInOut { 0%,100% {opacity: 0.4} 50% {opacity: 0.8} }
+
+        /* 底部面板 */
+        #control-panel {
+            height: 45%;
+            background: rgba(0,0,0,0.2);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .tab {
+            flex: 1; padding: 15px; text-align: center;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer; transition: 0.3s;
+        }
+        .tab.active { color: #fff; background: rgba(255,255,255,0.05); font-weight: bold; border-bottom: 2px solid var(--primary-accent); }
+
+        .content-area { flex: 1; overflow-y: auto; padding: 15px; display: none; }
+        .content-area.show { display: block; animation: slideUp 0.3s; }
+        @keyframes slideUp { from {opacity:0; transform:translateY(10px)} to {opacity:1; transform:translateY(0)} }
+
+        /* 列表项 */
+        .skill-item {
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+        .skill-item.maxed {
+            border-color: var(--gold);
+            background: linear-gradient(90deg, rgba(246, 211, 101, 0.1), rgba(253, 160, 133, 0.1));
+        }
+
+        .btn-glass {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+        }
+        .btn-glass:active { background: rgba(255,255,255,0.3); }
+        .btn-glass:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* 渡劫按钮 */
+        #breakthrough-btn {
+            width: 100%; padding: 15px;
+            margin-top: 10px;
+            background: linear-gradient(90deg, #ff416c, #ff4b2b);
+            border: none; border-radius: 12px;
+            color: white; font-weight: bold; font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
+            display: none;
+            animation: pulse 2s infinite;
+        }
+
+        /* 模态框通用 */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        .modal-box {
+            background: rgba(30, 30, 40, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 80%;
+            max-width: 400px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+        .hidden { display: none !important; }
+
+        /* 渡劫场景 */
+        #tribulation-overlay {
+            flex-direction: column;
+            background: radial-gradient(circle, #20002c 0%, #cbb4d4 100%);
+        }
+        .thunder {
+            position: absolute; top:0; left:50%; width: 4px; height: 0;
+            background: #fff;
+            box-shadow: 0 0 20px #fff, 0 0 40px purple;
+            transform: translateX(-50%);
+            transition: height 0.1s;
+        }
+        .log-box {
+            width: 90%; height: 200px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 10px;
+            padding: 10px;
+            overflow-y: auto;
+            text-align: left;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            border: 1px solid #444;
+        }
+        .log-line { margin-bottom: 5px; opacity: 0; animation: fadeToRight 0.3s forwards; }
+        @keyframes fadeToRight { from {opacity:0; transform:translateX(-10px)} to {opacity:1; transform:translateX(0)} }
+
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-8px, 0, 0); } 40%, 60% { transform: translate3d(8px, 0, 0); } }
+
+        /* 浮动数字 */
+        .float-text {
+            position: absolute; pointer-events: none;
+            color: #fff; font-weight: bold;
+            animation: floatUp 0.8s forwards;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        @keyframes floatUp { to { transform: translateY(-80px) scale(1.5); opacity: 0; } }
 
     </style>
 </head>
 <body>
 
-    <canvas id="particleCanvas" class="bg-canvas"></canvas>
+    <div class="blobs">
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="blob"></div>
+    </div>
 
     <div id="app">
         <header>
-            <div class="player-info">
-                <h1 id="player-name-display">道友</h1>
-                <p id="player-title">凡人</p>
+            <div class="player-card">
+                <h1 id="ui-name">道友</h1>
+                <p id="ui-title">凡人</p>
             </div>
-            <div class="resource-box">
-                <div class="spirit-point" id="spirit-display">0</div>
-                <div class="cps-text">灵力值 (修为)</div>
+            <div class="spirit-box">
+                <div class="spirit-val" id="ui-spirit">0</div>
+                <div style="font-size:0.7rem; opacity:0.7">灵气值</div>
             </div>
         </header>
 
-        <div id="click-area" onclick="game.clickMeditate(event)">
-            <div class="avatar-container" id="avatar">
-                <div style="font-size: 4rem;">🧘</div>
-                <div class="realm-label" id="realm-display">炼气期 一层</div>
-            </div>
-            <p style="margin-top: 30px; color: #64748b; font-size: 0.9rem;">点击屏幕 吸收天地灵气</p>
+        <div id="meditate-area">
+            <div class="liquid-avatar" id="avatar">🧘</div>
+            <div class="realm-badge" id="ui-realm">炼气期 一层</div>
+            <div class="tip-text">轻触聚气 · 长按鲸吞</div>
         </div>
 
-        <div id="panel-container">
+        <div id="control-panel">
             <div class="tabs">
-                <button class="tab-btn active" onclick="ui.switchTab('skills')">功法秘籍</button>
-                <button class="tab-btn" onclick="ui.switchTab('realm')">境界突破</button>
-                <button class="tab-btn" onclick="ui.switchTab('log')">修仙日志</button>
+                <div class="tab active" onclick="ui.switchTab('skills')">功法</div>
+                <div class="tab" onclick="ui.switchTab('realm')">境界</div>
+                <div class="tab" onclick="ui.switchTab('logs')">日志</div>
             </div>
 
-            <div id="tab-skills" class="tab-content show">
+            <div id="tab-skills" class="content-area show">
                 <div id="skills-list"></div>
             </div>
 
-            <div id="tab-realm" class="tab-content" style="text-align: center;">
-                <h3 style="color: var(--primary-gold)">当前瓶颈</h3>
-                <p id="next-realm-req" style="margin-bottom: 20px;">需要修为: 100</p>
-                <button id="tribulation-btn" onclick="game.attemptBreakthrough()">
+            <div id="tab-realm" class="content-area" style="text-align: center;">
+                <h2 style="margin: 0 0 10px 0; color: var(--gold)">境界瓶颈</h2>
+                <p id="realm-req" style="margin-bottom: 20px; font-size: 0.9rem; color: #aaa;">需要修炼至当前境界圆满</p>
+                <button id="breakthrough-btn" onclick="game.startTribulation()">
                     逆天改命 (开始渡劫)
                 </button>
-                <p id="tribulation-warn" style="font-size: 0.8rem; color: #64748b; margin-top: 10px;">
-                    渡劫须知：共10道天雷，失败率30%。<br>
-                    <span style="color:var(--danger-red)">渡劫失败将身死道消（重置进度）</span>
-                </p>
+                <div id="trib-info" style="font-size:0.8rem; margin-top:15px; text-align:left; color:#ccc; display:none;">
+                    <p>⚡ <b>天劫说明：</b></p>
+                    <p>1. 需承受九道天雷轰顶。</p>
+                    <p>2. 需度过最后一道心魔大劫。</p>
+                    <p>3. 功法越强，成功率越高 (满级功法可护体)。</p>
+                    <p>4. <span style="color:var(--danger)">失败则身死道消，重入轮回。</span></p>
+                </div>
             </div>
 
-            <div id="tab-log" class="tab-content">
-                <div id="game-log" style="font-size: 0.8rem; color: #94a3b8; line-height: 1.6;"></div>
+            <div id="tab-logs" class="content-area">
+                <div id="game-logs" style="font-size:0.8rem; line-height:1.6; color:#ccc;"></div>
             </div>
         </div>
     </div>
 
-    <div id="start-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 style="color: var(--primary-gold); margin-bottom: 0;">踏入仙途</h2>
-            <p style="font-size: 0.9rem; color: #94a3b8;">前尘往事如云烟，今生重修觅长生</p>
-            
-            <div class="input-group">
-                <input type="text" id="input-name" placeholder="请输入道号 (如: 韩立)" maxlength="8">
-            </div>
-            
-            <button class="btn-start" onclick="game.startGame()">开始修仙</button>
+    <div id="modal-start" class="modal">
+        <div class="modal-box">
+            <h2 style="color: var(--primary-accent)">踏入仙途</h2>
+            <input type="text" id="input-name" placeholder="请输入道号" style="padding:10px; border-radius:5px; border:none; width:80%; margin:20px 0; text-align:center;">
+            <button class="btn-glass" style="background:var(--primary-accent); width:100%;" onclick="game.initPlayer()">开始修仙</button>
         </div>
     </div>
 
-    <div id="tribulation-overlay" class="hidden">
-        <div class="thunder-bolt" id="thunder-effect"></div>
-        <div class="tribulation-status">
-            <h1 style="font-size: 3rem; color: #ffeb3b; text-shadow: 0 0 20px red;">正在渡劫</h1>
-            <h2 id="tribulation-progress">第 0 / 10 道天雷</h2>
-            <div class="tribulation-log" id="tribulation-log-box"></div>
-        </div>
+    <div id="modal-tribulation" class="modal hidden" style="background: rgba(0,0,0,0.95);">
+        <div class="thunder" id="thunder-beam"></div>
+        <h1 style="color: #fff; text-shadow: 0 0 20px purple;" id="trib-title">天劫降临</h1>
+        <div class="log-box" id="trib-logs"></div>
     </div>
 
-    <div id="death-modal" class="modal-overlay hidden">
-        <div class="modal-content" style="border-color: #444;">
-            <h1 style="color: #ff4757; font-size: 3rem;">陨 落</h1>
-            <p id="death-reason">你在天雷之下灰飞烟灭...</p>
-            <p style="color: #aaa; font-size: 0.9rem;">轮回百世，终有一日可证大道。</p>
-            <button class="btn-start" style="margin-top: 20px; background: #fff; color: #000;" onclick="game.reincarnate()">转世重修</button>
+    <div id="modal-death" class="modal hidden">
+        <div class="modal-box" style="border-color: var(--danger);">
+            <h1 style="color: var(--danger)">陨 落</h1>
+            <p id="death-msg">你在天劫下灰飞烟灭...</p>
+            <button class="btn-glass" style="margin-top:20px; width:100%; background:var(--danger);" onclick="game.reincarnate()">转世重修</button>
         </div>
     </div>
 
 <script>
 /**
- * ==========================================================
- * 游戏核心逻辑引擎
- * ==========================================================
+ * ================= 配置数据 =================
  */
-
-// 游戏配置数据
 const CONFIG = {
-    // 境界列表 (名称, 升级所需灵力, 每次点击基础增益)
+    // 境界划分：每层10级，第10级为大圆满，可渡劫
     REALMS: [
-        { name: "炼气期 一层", req: 100, mult: 1 },
-        { name: "炼气期 五层", req: 500, mult: 2 },
-        { name: "炼气期 巅峰", req: 2000, mult: 5 },
-        { name: "筑基期 初期", req: 10000, mult: 20 }, // 第一次小渡劫
-        { name: "筑基期 中期", req: 50000, mult: 50 },
-        { name: "筑基期 后期", req: 150000, mult: 100 },
-        { name: "金丹期 (真人)", req: 500000, mult: 300 },
-        { name: "元婴期 (老祖)", req: 2000000, mult: 1000 },
-        { name: "化神期 (大能)", req: 10000000, mult: 5000 },
-        { name: "渡劫期 (半仙)", req: 100000000, mult: 20000 },
-        { name: "大乘期 (真仙)", req: 999999999, mult: 100000 }
+        { name: "炼气期", baseReq: 100, isMajor: false },       // 0
+        { name: "筑基期", baseReq: 5000, isMajor: true },      // 1 (需渡劫)
+        { name: "金丹期", baseReq: 50000, isMajor: true },     // 2
+        { name: "元婴期", baseReq: 500000, isMajor: true },    // 3
+        { name: "化神期", baseReq: 5000000, isMajor: true },   // 4
+        { name: "炼虚期", baseReq: 50000000, isMajor: true },  // 5
+        { name: "合体期", baseReq: 200000000, isMajor: true }, // 6
+        { name: "大乘期", baseReq: 1000000000, isMajor: true },// 7
+        { name: "渡劫期", baseReq: 5000000000, isMajor: true } // 8 (最终飞升)
     ],
-    // 初始功法库 (名称, 基础消耗, 描述, 基础加成)
-    SKILLS_DB: [
-        { id: 1, name: "基础吐纳法", cost: 10, desc: "最基础的呼吸法门，增加少量灵力获取。", bonus: 1 },
-        { id: 2, name: "碧水流云剑", cost: 100, desc: "水系剑法，连绵不绝，灵力运转加速。", bonus: 5 },
-        { id: 3, name: "烈火燎原诀", cost: 500, desc: "火系霸道功法，爆发力极强。", bonus: 15 },
-        { id: 4, name: "大衍龟息功", cost: 2000, desc: "模拟神龟呼吸，极大提升根基。", bonus: 40 },
-        { id: 5, name: "金刚不坏身", cost: 8000, desc: "佛门炼体神功，不仅加灵力还能抗雷劫。", bonus: 100 },
-        { id: 6, name: "踏雪无痕步", cost: 20000, desc: "身法轻灵，采集灵气速度倍增。", bonus: 250 },
-        { id: 7, name: "乾坤大挪移", cost: 50000, desc: "借力打力，转换天地灵气。", bonus: 600 },
-        { id: 8, name: "吞天魔功", cost: 150000, desc: "霸道无比，强行掠夺天地造化。", bonus: 1500 },
-        { id: 9, name: "九转还魂丹术", cost: 500000, desc: "丹道大成，灵力生生不息。", bonus: 4000 },
-        { id: 10, name: "混沌虚空斩", cost: 2000000, desc: "一剑破虚空，接触大道本源。", bonus: 10000 },
-        { id: 11, name: "真·吃吃吃", cost: 5000000, desc: "传说中的秘术，吃就能变强！", bonus: 25000 },
-        { id: 12, name: "万剑归宗", cost: 10000000, desc: "无上剑道，万剑齐发。", bonus: 50000 }
+    SKILLS: [
+        { id: 1, name: "基础吐纳", cost: 10, bonus: 1, desc: "呼吸法门" },
+        { id: 2, name: "引气诀", cost: 100, bonus: 5, desc: "牵引灵气" },
+        { id: 3, name: "厚土身", cost: 500, bonus: 15, desc: "增强肉身" },
+        { id: 4, name: "御风术", cost: 2000, bonus: 40, desc: "采集加速" },
+        { id: 5, name: "五行遁法", cost: 8000, bonus: 100, desc: "感悟天地" },
+        { id: 6, name: "紫霄神雷", cost: 30000, bonus: 250, desc: "雷电淬体" },
+        { id: 7, name: "太上忘情", cost: 100000, bonus: 600, desc: "心如止水" },
+        { id: 8, name: "法天象地", cost: 500000, bonus: 1500, desc: "吞噬天地" },
+        { id: 9, name: "一气化三清", cost: 2000000, bonus: 5000, desc: "分身修炼" },
+        { id: 10, name: "袖里乾坤", cost: 10000000, bonus: 12000, desc: "自成世界" },
+        { id: 11, name: "言出法随", cost: 50000000, bonus: 30000, desc: "修改法则" },
+        { id: 12, name: "万法归一", cost: 100000000, bonus: 80000, desc: "大道本源" }
     ]
 };
 
-// 游戏状态管理
-class GameState {
-    constructor() {
-        this.reset();
-    }
+/**
+ * ================= 游戏逻辑 =================
+ */
+const game = {
+    data: {
+        name: "",
+        spirit: 0,
+        realmIdx: 0,    // 大境界索引
+        subRealm: 1,    // 小境界 (1-9层, 10为圆满)
+        skills: []
+    },
+    
+    // 长按逻辑变量
+    holdTimer: null,
+    holdStartTime: 0,
+    isHolding: false,
 
-    reset() {
-        this.playerName = "无名氏";
-        this.spirit = 0; // 灵力点数
-        this.realmIndex = 0; // 当前境界下标
-        this.clickCount = 0;
-        this.skills = JSON.parse(JSON.stringify(CONFIG.SKILLS_DB)).map(s => ({...s, level: 0})); // 深拷贝并初始化等级
-        this.logs = [];
-        this.isProcessing = false; // 锁，防止重复操作
-    }
-
-    // 计算每次点击获得的灵力
-    getClickPower() {
-        let base = 1;
-        // 境界加成
-        base *= CONFIG.REALMS[this.realmIndex].mult;
-        // 功法加成
-        let skillBonus = 0;
-        this.skills.forEach(s => {
-            skillBonus += s.level * s.bonus;
-            // 极品功法额外加成 (满级翻倍)
-            if(s.level >= 100) skillBonus += s.bonus * 50; 
-        });
-        
-        return base + skillBonus;
-    }
-
-    // 获取当前境界信息
-    getRealm() {
-        return CONFIG.REALMS[this.realmIndex];
-    }
-
-    // 获取下一个境界
-    getNextRealm() {
-        return CONFIG.REALMS[this.realmIndex + 1];
-    }
-}
-
-// 界面管理器
-const ui = {
-    // 初始化 DOM 引用
     init() {
-        this.els = {
-            spirit: document.getElementById('spirit-display'),
-            realm: document.getElementById('realm-display'),
-            name: document.getElementById('player-name-display'),
-            skillsList: document.getElementById('skills-list'),
-            logs: document.getElementById('game-log'),
-            btnTrib: document.getElementById('tribulation-btn'),
-            tribReq: document.getElementById('next-realm-req'),
-            avatar: document.getElementById('avatar'),
-            startModal: document.getElementById('start-modal'),
-            inputName: document.getElementById('input-name'),
-            clickArea: document.getElementById('click-area')
+        // 初始化功法数据
+        this.data.skills = CONFIG.SKILLS.map(s => ({...s, level: 0}));
+        
+        // 绑定事件
+        const area = document.getElementById('meditate-area');
+        
+        // 鼠标/触摸按下
+        const startHold = (e) => {
+            e.preventDefault();
+            if(this.isTribulation) return;
+            this.isHolding = true;
+            this.holdStartTime = Date.now();
+            document.getElementById('avatar').classList.add('holding');
+            this.gameLoop(); // 开始循环
+            this.spawnClickEffect(e);
         };
-        this.currentTab = 'skills';
+
+        // 鼠标/触摸松开
+        const endHold = () => {
+            this.isHolding = false;
+            document.getElementById('avatar').classList.remove('holding');
+        };
+
+        area.addEventListener('mousedown', startHold);
+        area.addEventListener('touchstart', startHold);
+        
+        document.addEventListener('mouseup', endHold);
+        document.addEventListener('touchend', endHold);
+        
+        ui.update();
     },
 
-    updateAll() {
-        // 更新数字显示
-        this.els.spirit.innerText = this.formatNumber(game.state.spirit);
-        this.els.realm.innerText = game.state.getRealm().name;
-        this.els.name.innerText = game.state.playerName;
-
-        // 更新渡劫按钮状态
-        const nextRealm = game.state.getNextRealm();
-        if (nextRealm) {
-            this.els.tribReq.innerText = `下境界所需: ${this.formatNumber(nextRealm.req)}`;
-            if (game.state.spirit >= nextRealm.req) {
-                this.els.btnTrib.style.display = 'block';
-                this.els.tribReq.style.color = '#2ed573';
-                this.els.tribReq.innerText = "灵力充盈，可尝试突破！";
-            } else {
-                this.els.btnTrib.style.display = 'none';
-                this.els.tribReq.style.color = '#e2e8f0';
-            }
-        } else {
-            this.els.tribReq.innerText = "已至化境，举世无敌";
-            this.els.btnTrib.style.display = 'none';
-        }
-
-        // 如果功法列表打开，更新它
-        if (this.currentTab === 'skills') {
-            this.renderSkills();
-        }
+    initPlayer() {
+        const name = document.getElementById('input-name').value.trim();
+        if(!name) return alert("请输入名字");
+        this.data.name = name;
+        document.getElementById('modal-start').classList.add('hidden');
+        ui.log(`<b>${name}</b> 踏入修仙界，大道争锋，始于足下。`, 'gold');
+        ui.update();
     },
 
-    renderSkills() {
-        let html = '';
-        game.state.skills.forEach(skill => {
-            const cost = Math.floor(skill.cost * Math.pow(1.15, skill.level));
-            const isMax = skill.level >= 100;
-            const canAfford = game.state.spirit >= cost;
-            
-            // 极品前缀逻辑
-            let displayName = skill.name;
-            let nameClass = "";
-            let maxBadge = "";
-            
-            if (isMax) {
-                displayName = "极品·" + skill.name;
-                nameClass = "jp-title";
-                maxBadge = `<span class="max-tag" style="display:inline-block">MAX</span>`;
-            }
+    // 核心循环 (处理长按指数增长)
+    gameLoop() {
+        if (!this.isHolding) return;
 
-            html += `
-            <div class="list-item">
-                <div class="item-info">
-                    <h4>
-                        ${maxBadge}
-                        <span class="${nameClass}">${displayName}</span> 
-                        <span style="color:#64748b; font-size:0.8rem">Lv.${skill.level}</span>
-                    </h4>
-                    <div class="item-desc">${skill.desc} (+${skill.bonus}/级)</div>
-                </div>
-                <div>
-                    <button class="upgrade-btn ${isMax ? 'maxed' : ''}" 
-                        onclick="game.upgradeSkill(${skill.id})" 
-                        ${(!canAfford || isMax) ? 'disabled' : ''}>
-                        ${isMax ? '已圆满' : '升级 ' + this.formatNumber(cost)}
-                    </button>
-                </div>
-            </div>
-            `;
+        const duration = (Date.now() - this.holdStartTime) / 1000; // 按住秒数
+        const base = this.calculateClickPower();
+        
+        // 指数增长算法：每按住1秒，倍率增加 (时间越久越快)
+        // 限制最大倍率防止数值溢出太快
+        let multiplier = 1 + Math.pow(duration, 2); 
+        if(multiplier > 100) multiplier = 100; // 封顶100倍速
+
+        const gain = base * (0.1 * multiplier); // 每帧获得的灵力 (假设60fps调用不太准，简化为按频率)
+
+        this.data.spirit += gain;
+        ui.updateSpirit();
+
+        // 循环调用
+        requestAnimationFrame(() => this.gameLoop());
+    },
+
+    // 单次点击/计算基础产出
+    calculateClickPower() {
+        let base = 1;
+        // 境界加成 (指数级)
+        base = base * Math.pow(2, this.data.realmIdx + (this.data.subRealm/10));
+        
+        // 功法加成
+        this.data.skills.forEach(s => {
+            let sBonus = s.level * s.bonus;
+            if(s.level >= 100) sBonus *= 2; // 满级翻倍
+            base += sBonus;
         });
-        this.els.skillsList.innerHTML = html;
+        return base;
     },
 
-    addLog(msg, type = 'normal') {
-        const time = new Date().toLocaleTimeString();
-        let color = '#94a3b8';
-        if(type === 'gain') color = '#2ed573';
-        if(type === 'danger') color = '#ff4757';
-        if(type === 'gold') color = '#ffd700';
-
-        const p = document.createElement('div');
-        p.style.color = color;
-        p.style.marginBottom = '5px';
-        p.innerHTML = `[${time}] ${msg}`;
+    spawnClickEffect(e) {
+        let x, y;
+        if(e.type === 'touchstart') {
+            x = e.touches[0].clientX;
+            y = e.touches[0].clientY;
+        } else {
+            x = e.clientX;
+            y = e.clientY;
+        }
         
-        this.els.logs.prepend(p);
-        if (this.els.logs.children.length > 50) this.els.logs.lastChild.remove();
-        game.state.logs.push(msg); // 存入数据
-    },
-
-    switchTab(tabName) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('show'));
-        
-        event.target.classList.add('active');
-        document.getElementById('tab-' + tabName).classList.add('show');
-        this.currentTab = tabName;
-        if(tabName === 'skills') this.renderSkills();
-    },
-
-    // 格式化大数字 (10k, 100w 等)
-    formatNumber(num) {
-        if (num >= 100000000) return (num / 100000000).toFixed(2) + '亿';
-        if (num >= 10000) return (num / 10000).toFixed(1) + '万';
-        return Math.floor(num);
-    },
-
-    // 播放点击浮动文字动画
-    showFloatText(x, y, text) {
+        // 浮动文字
         const el = document.createElement('div');
         el.className = 'float-text';
         el.style.left = x + 'px';
-        el.style.top = y + 'px';
-        el.innerText = '+' + this.formatNumber(text);
+        el.style.top = y - 50 + 'px';
+        el.innerText = '+' + ui.formatNum(this.calculateClickPower());
         document.body.appendChild(el);
-        setTimeout(() => el.remove(), 1000);
-    }
-};
-
-// 游戏主控制器
-const game = {
-    state: new GameState(),
-
-    init() {
-        ui.init();
-        // 如果有存档可以读取 (这里为了演示简单化，只做内存存储)
-        this.loop();
-    },
-
-    startGame() {
-        const name = ui.els.inputName.value.trim();
-        if (!name) return alert("道友请留名！");
-        this.state.playerName = name;
-        ui.els.startModal.classList.add('hidden');
-        ui.addLog(`欢迎 <b>${name}</b> 踏入修仙界！`, 'gold');
-        ui.updateAll();
-    },
-
-    clickMeditate(e) {
-        if (this.state.isProcessing) return; // 渡劫时不能点
-
-        const gain = this.state.getClickPower();
-        this.state.spirit += gain;
-        this.state.clickCount++;
-
-        // 视觉反馈
-        ui.els.avatar.classList.add('meditating');
-        setTimeout(() => ui.els.avatar.classList.remove('meditating'), 100);
-        
-        // 浮动文字位置随机偏移
-        const x = e.clientX + (Math.random() * 40 - 20);
-        const y = e.clientY - 20;
-        ui.showFloatText(x, y, gain);
-
-        // 粒子特效
-        particleSystem.explode(e.clientX, e.clientY);
-
-        ui.updateAll();
+        setTimeout(() => el.remove(), 800);
     },
 
     upgradeSkill(id) {
-        const skill = this.state.skills.find(s => s.id === id);
-        if (!skill || skill.level >= 100) return;
-
+        const skill = this.data.skills.find(s => s.id === id);
+        if(!skill || skill.level >= 100) return;
+        
+        // 价格公式
         const cost = Math.floor(skill.cost * Math.pow(1.15, skill.level));
-        if (this.state.spirit >= cost) {
-            this.state.spirit -= cost;
+        
+        if(this.data.spirit >= cost) {
+            this.data.spirit -= cost;
             skill.level++;
-            ui.addLog(`修习了 [${skill.name}]，功力大增！`, 'gain');
-            
-            if (skill.level === 100) {
-                ui.addLog(`[${skill.name}] 已臻至化境，蜕变为极品功法！`, 'gold');
+            ui.update();
+            if(skill.level === 100) {
+                ui.log(`功法 [${skill.name}] 已至圆满！获得天道庇护！`, 'gold');
             }
-            ui.updateAll();
         }
     },
 
-    // 渡劫逻辑
-    async attemptBreakthrough() {
-        const nextRealm = this.state.getNextRealm();
-        if (!nextRealm || this.state.spirit < nextRealm.req) return;
+    // 升级小境界 (自动/手动)
+    // 这里简化：灵气足够自动升小境界，直到大境界瓶颈
+    checkUpgrade() {
+        const realmCfg = CONFIG.REALMS[this.data.realmIdx];
+        const nextReq = realmCfg.baseReq * Math.pow(2, this.data.subRealm);
+        
+        return {
+            canUpgrade: this.data.spirit >= nextReq,
+            req: nextReq,
+            isBottleneck: this.data.subRealm >= 10
+        };
+    },
 
-        // 扣除灵力（或者设定为门槛不需要扣除？这里设定为门槛，灵力保留，但失败会清空？）
-        // 按照常规修仙，突破需要消耗大量灵力
-        this.state.spirit -= nextRealm.req;
-        this.state.isProcessing = true;
-        
-        // 启动渡劫 UI
-        const overlay = document.getElementById('tribulation-overlay');
-        const thunder = document.getElementById('thunder-effect');
-        const logBox = document.getElementById('tribulation-log-box');
-        const progressTitle = document.getElementById('tribulation-progress');
-        
-        overlay.classList.remove('hidden');
+    // 渡劫系统
+    isTribulation: false,
+    async startTribulation() {
+        const status = this.checkUpgrade();
+        if(!status.canUpgrade || !status.isBottleneck) return;
+
+        // 消耗灵力
+        this.data.spirit -= status.req;
+        this.isTribulation = true;
+
+        // UI 切换
+        const modal = document.getElementById('modal-tribulation');
+        const logBox = document.getElementById('trib-logs');
+        const thunder = document.getElementById('thunder-beam');
+        modal.classList.remove('hidden');
         logBox.innerHTML = '';
-        
-        // 渡劫过程：10道雷
+
+        // 计算成功率 (隐藏逻辑)
+        // 基础 70% + (满级功法数 / 总功法数 * 30%)
+        const maxedCount = this.data.skills.filter(s => s.level >= 100).length;
+        const totalSkills = this.data.skills.length;
+        let successRate = 0.7 + (maxedCount / totalSkills) * 0.35; // 稍微给点溢出容错
+        if(successRate > 1) successRate = 1;
+
+        // 过程：9道雷 + 1心魔 = 10轮
         let survive = true;
-        const totalStrikes = 10;
-        
-        // 成功率计算：基础 70%，每有一个满级功法 +2%
-        let maxedSkills = this.state.skills.filter(s => s.level >= 100).length;
-        let successRate = 0.7 + (maxedSkills * 0.02);
-        if (successRate > 0.95) successRate = 0.95; // 上限 95%
 
-        for (let i = 1; i <= totalStrikes; i++) {
-            progressTitle.innerText = `第 ${i} / ${totalStrikes} 道天雷`;
+        for(let i=1; i<=10; i++) {
+            await this.wait(1000);
             
-            // 等待动画
-            await this.sleep(800);
-            
-            // 雷劈动画
-            thunder.classList.add('thunder-anim');
-            document.body.classList.add('shaking'); // 屏幕震动
-            
-            await this.sleep(200);
-            thunder.classList.remove('thunder-anim');
-            document.body.classList.remove('shaking');
+            let isHeartDemon = (i === 10);
+            let msg = "";
+            let color = "";
 
-            // 判定逻辑
-            const roll = Math.random();
-            const logLine = document.createElement('div');
-            logLine.className = 'log-line';
+            if(!isHeartDemon) {
+                // 天雷特效
+                thunder.style.height = "100%";
+                thunder.style.opacity = "1";
+                document.body.classList.add('shake');
+                setTimeout(() => {
+                    thunder.style.height = "0";
+                    document.body.classList.remove('shake');
+                }, 150);
 
-            if (roll > successRate) {
-                // 这一道雷没抗住
-                logLine.innerHTML = `<span class="log-danger">第 ${i} 道天雷击碎了你的护体真气！</span>`;
-                logBox.appendChild(logLine);
-                survive = false;
-                break; 
+                // 判定
+                if(Math.random() > successRate) {
+                    survive = false;
+                    msg = `第 ${i} 道天雷击碎了你的护体灵光！`;
+                    color = "#ff416c";
+                } else {
+                    msg = `第 ${i} 道天雷落下，你咬牙抗住！`;
+                    color = "#00d2ff";
+                }
             } else {
-                logLine.innerHTML = `<span class="log-success">你成功抗下了第 ${i} 道天雷！</span>`;
-                logBox.appendChild(logLine);
-                logBox.scrollTop = logBox.scrollHeight;
+                // 心魔劫
+                msg = "心魔幻境袭来...";
+                this.appendTribLog(msg, "yellow");
+                await this.wait(1500);
+                
+                if(survive && Math.random() <= successRate) {
+                    msg = "你道心稳固，斩灭心魔！";
+                    color = "#f6d365";
+                } else {
+                    survive = false;
+                    msg = "你迷失在幻境中，走火入魔...";
+                    color = "#ff416c";
+                }
             }
+
+            this.appendTribLog(msg, color);
+            
+            if(!survive) break;
         }
 
-        await this.sleep(1000);
-        overlay.classList.add('hidden');
-        this.state.isProcessing = false;
+        await this.wait(1500);
+        modal.classList.add('hidden');
+        this.isTribulation = false;
 
-        if (survive) {
-            this.state.realmIndex++;
-            ui.addLog(`=============`, 'gold');
-            ui.addLog(`渡劫成功！晋升为 [${this.state.getRealm().name}]`, 'gold');
-            ui.addLog(`=============`, 'gold');
-            alert("渡劫成功！天地同庆！");
+        if(survive) {
+            this.successBreakthrough();
         } else {
-            this.die();
+            this.failBreakthrough();
         }
-        
-        ui.updateAll();
     },
 
-    die() {
-        document.getElementById('death-modal').classList.remove('hidden');
-        document.getElementById('death-reason').innerText = `修为止步于 ${this.state.getRealm().name}`;
+    appendTribLog(text, color) {
+        const div = document.createElement('div');
+        div.className = 'log-line';
+        div.style.color = color;
+        div.innerText = text;
+        document.getElementById('trib-logs').appendChild(div);
+        document.getElementById('trib-logs').scrollTop = 9999;
+    },
+
+    successBreakthrough() {
+        this.data.realmIdx++;
+        this.data.subRealm = 1;
+        const newRealmName = CONFIG.REALMS[this.data.realmIdx].name;
+        alert(`渡劫成功！晋升 ${newRealmName}！`);
+        ui.log(`=================`, 'gold');
+        ui.log(`逆天改命成功！晋升 [${newRealmName}]`, 'gold');
+        ui.update();
+    },
+
+    failBreakthrough() {
+        document.getElementById('modal-death').classList.remove('hidden');
+        document.getElementById('death-msg').innerText = `倒在了 ${CONFIG.REALMS[this.data.realmIdx].name} 圆满境界`;
     },
 
     reincarnate() {
-        // 转世逻辑：保留 20% 的灵力，境界重置，功法等级减半但保留
-        const heritage = Math.floor(this.state.spirit * 0.2);
+        // 转世：保留 10% 灵气，功法等级保留一半
+        this.data.spirit = Math.floor(this.data.spirit * 0.1);
+        this.data.realmIdx = 0;
+        this.data.subRealm = 1;
+        this.data.skills.forEach(s => s.level = Math.floor(s.level / 2));
         
-        // 重置状态
-        this.state.realmIndex = 0;
-        this.state.spirit = heritage;
-        this.state.skills.forEach(s => {
-            s.level = Math.floor(s.level / 2); // 功法保留一半等级
-        });
-
-        document.getElementById('death-modal').classList.add('hidden');
-        ui.addLog(`轮回转世成功！保留了前世 20% 的灵力。`, 'purple');
-        ui.updateAll();
+        document.getElementById('modal-death').classList.add('hidden');
+        ui.log("轮回转世，再踏仙途...", "purple");
+        ui.update();
     },
 
-    sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    },
-
-    // 自动保存循环 (可选，这里仅做 UI 刷新)
-    loop() {
-        requestAnimationFrame(() => this.loop());
-        // 如果有自动修炼功能可以在这里写
-    }
+    wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 };
 
 /**
- * ==========================================================
- * Canvas 粒子系统 (增强视觉)
- * ==========================================================
+ * ================= 界面控制 =================
  */
-const particleSystem = {
-    canvas: document.getElementById('particleCanvas'),
-    ctx: null,
-    particles: [],
-
-    init() {
-        this.ctx = this.canvas.getContext('2d');
-        this.resize();
-        window.addEventListener('resize', () => this.resize());
-        this.animate();
-    },
-
-    resize() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-    },
-
-    explode(x, y) {
-        for (let i = 0; i < 8; i++) {
-            this.particles.push({
-                x: x,
-                y: y,
-                vx: (Math.random() - 0.5) * 5,
-                vy: (Math.random() - 0.5) * 5,
-                life: 1,
-                color: `hsl(${Math.random()*60 + 120}, 100%, 50%)` // 绿色系
-            });
-        }
-    },
-
-    animate() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+const ui = {
+    update() {
+        this.updateSpirit();
+        document.getElementById('ui-name').innerText = game.data.name || "道友";
         
-        // 绘制背景星尘
-        this.ctx.fillStyle = '#ffffff';
-        if (Math.random() > 0.9) {
-            this.ctx.fillRect(Math.random()*this.canvas.width, Math.random()*this.canvas.height, 1, 1);
+        // 境界显示
+        const rCfg = CONFIG.REALMS[game.data.realmIdx];
+        const rName = `${rCfg.name} ${game.data.subRealm}层${game.data.subRealm>=10 ? '(圆满)' : ''}`;
+        document.getElementById('ui-realm').innerText = rName;
+        document.getElementById('ui-title').innerText = rCfg.name + "修士";
+
+        // 境界突破页面逻辑
+        const status = game.checkUpgrade();
+        const btn = document.getElementById('breakthrough-btn');
+        const reqText = document.getElementById('realm-req');
+        const info = document.getElementById('trib-info');
+
+        if (status.isBottleneck) {
+            // 到达瓶颈
+            reqText.innerText = `需消耗灵气: ${this.formatNum(status.req)}`;
+            if (status.canUpgrade) {
+                btn.style.display = 'block';
+                reqText.style.color = '#00d2ff';
+                info.style.display = 'block';
+            } else {
+                btn.style.display = 'none';
+                reqText.style.color = '#ff416c';
+                info.style.display = 'none';
+            }
+        } else {
+            // 自动升级小境界逻辑 (如果有灵气)
+            if (status.canUpgrade) {
+                game.data.spirit -= status.req;
+                game.data.subRealm++;
+                this.log(`突破至 ${rCfg.name} ${game.data.subRealm}层`, '#00d2ff');
+                this.update(); // 递归更新直到不够
+                return;
+            }
+            btn.style.display = 'none';
+            reqText.innerText = `距离下一层还需: ${this.formatNum(status.req - game.data.spirit)}`;
+            reqText.style.color = '#aaa';
+            info.style.display = 'none';
         }
 
-        // 绘制点击粒子
-        for (let i = this.particles.length - 1; i >= 0; i--) {
-            let p = this.particles[i];
-            p.x += p.vx;
-            p.y += p.vy;
-            p.life -= 0.02;
+        // 渲染功法
+        this.renderSkills();
+    },
+
+    updateSpirit() {
+        document.getElementById('ui-spirit').innerText = this.formatNum(game.data.spirit);
+    },
+
+    renderSkills() {
+        const list = document.getElementById('skills-list');
+        list.innerHTML = "";
+        
+        game.data.skills.forEach(s => {
+            const cost = Math.floor(s.cost * Math.pow(1.15, s.level));
+            const isMax = s.level >= 100;
+            const canBuy = game.data.spirit >= cost && !isMax;
             
-            this.ctx.fillStyle = p.color;
-            this.ctx.globalAlpha = p.life;
-            this.ctx.beginPath();
-            this.ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-            this.ctx.fill();
+            let nameHtml = s.name;
+            if(isMax) nameHtml = `<span class="jp-title">极品·${s.name}</span> <span style="font-size:0.6rem; background:gold; color:black; padding:1px 3px; border-radius:4px;">MAX</span>`;
 
-            if (p.life <= 0) this.particles.splice(i, 1);
-        }
-        this.ctx.globalAlpha = 1;
+            const div = document.createElement('div');
+            div.className = `skill-item ${isMax ? 'maxed' : ''}`;
+            div.innerHTML = `
+                <div>
+                    <div style="font-weight:bold; color:${isMax?'#ffd700':'#fff'}">${nameHtml}</div>
+                    <div style="font-size:0.7rem; color:#aaa;">Lv.${s.level} | ${s.desc}</div>
+                </div>
+                <button class="btn-glass" ${canBuy ? '' : 'disabled'} onclick="game.upgradeSkill(${s.id})">
+                    ${isMax ? '已圆满' : '升 ' + this.formatNum(cost)}
+                </button>
+            `;
+            list.appendChild(div);
+        });
+    },
 
-        requestAnimationFrame(() => this.animate());
+    log(msg, color) {
+        const box = document.getElementById('game-logs');
+        const p = document.createElement('div');
+        p.style.color = color || '#ccc';
+        p.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+        p.style.padding = '5px 0';
+        p.innerHTML = msg;
+        box.prepend(p);
+        if(box.children.length > 50) box.lastChild.remove();
+    },
+
+    switchTab(t) {
+        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.content-area').forEach(el => el.classList.remove('show'));
+        event.currentTarget.classList.add('active');
+        document.getElementById('tab-'+t).classList.add('show');
+    },
+
+    formatNum(n) {
+        if(n < 10000) return Math.floor(n);
+        if(n < 100000000) return (n/10000).toFixed(2) + '万';
+        return (n/100000000).toFixed(2) + '亿';
     }
 };
 
-// 启动游戏
-window.onload = function() {
-    particleSystem.init();
-    game.init();
-};
+// 启动
+window.onload = () => game.init();
 
 </script>
 </body>
