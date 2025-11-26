@@ -287,17 +287,27 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.96); z-index: 2000;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: background-color 0.1s;
         }
         .thunder-bolt {
-            position: absolute; top: 0; left: 50%; width: 6px; height: 100%;
-            background: #fff; box-shadow: 0 0 40px #fff, 0 0 100px #7b1fa2;
+            position: absolute; top: 0; left: 50%; 
+            width: 10px; /* 加宽 */
+            height: 100%;
+            background: #fff; 
+            box-shadow: 0 0 40px #fff, 0 0 100px #7b1fa2;
             transform: translateX(-50%) scaleY(0); transform-origin: top; opacity: 0;
+            z-index: 2001;
         }
-        .thunder-strike { animation: strike 0.08s; }
+        .thunder-strike { animation: strike 0.15s ease-out; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-80px) scale(1.2); opacity: 0; } }
-        @keyframes strike { 0% { transform: translateX(-50%) scaleY(0); opacity: 1; } 50% { transform: translateX(-50%) scaleY(1); opacity: 1; } 100% { transform: translateX(-50%) scaleY(1); opacity: 0; } }
+        @keyframes strike { 
+            0% { transform: translateX(-50%) scaleY(0); opacity: 1; } 
+            10% { transform: translateX(-52%) scaleY(1); opacity: 1; } 
+            20% { transform: translateX(-48%) scaleY(1); opacity: 1; }
+            100% { transform: translateX(-50%) scaleY(1); opacity: 0; } 
+        }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
         .hidden { display: none !important; }
@@ -473,7 +483,7 @@
             <div style="width:100%; background:#333; height:8px; border-radius:4px; margin-bottom:20px; overflow:hidden;">
                 <div id="trib-hp-bar" style="width:100%; height:100%; background:linear-gradient(90deg, #00e676, #69f0ae); transition: width 0.1s;"></div>
             </div>
-            <h2 id="trib-step" style="color: white; font-family: monospace; font-size:1.5rem; margin-bottom:20px;">准备抗劫</h2>
+            <h2 id="trib-step" style="color: white; font-family: monospace; font-size:1.5rem; margin-bottom:20px; transition: color 0.2s;">准备抗劫</h2>
             <div id="trib-console" style="height: 160px; overflow-y: scroll; background: rgba(0,0,0,0.5); border: 1px solid #444; padding: 15px; font-size: 0.75rem; text-align: left; border-radius:8px;"></div>
         </div>
     </div>
@@ -484,10 +494,7 @@
     </div>
 
 <script>
-// --- 核心数值配置重构 ---
-// power: 代表每升一级增加的基础倍率。2代表第一级x2, 第二级x4(或累加)
-// 需求：每级效能2倍，每升1级增加一倍 => 这里的 power 定义为 "单级提供的基础倍率增量"
-// 线性插值生成 2 -> 100 的数值
+// --- 核心数值配置 ---
 const generateSkills = () => {
     const skills = [
         "基础吐纳", "清尘术", "水球术", "大水球术", "碧水心法", 
@@ -502,7 +509,7 @@ const generateSkills = () => {
         return { 
             name, 
             cost: baseCost, 
-            power: Math.round(power * 10) / 10, // 保留一位小数
+            power: Math.round(power * 10) / 10, 
             desc: `每级效能 +${Math.round(power)}倍` 
         };
     });
@@ -548,6 +555,22 @@ const CONFIG = {
     SKILLS: generateSkills()
 };
 
+// --- 天劫雷谱 ---
+const THUNDER_LORE = [
+    { range: [1, 10], name: "凡铁白雷", color: "#ffffff", shadow: "#aaaaaa" },
+    { range: [11, 20], name: "乙木正雷", color: "#76ff03", shadow: "#2e7d32" }, // 绿
+    { range: [21, 30], name: "癸水阴雷", color: "#00b0ff", shadow: "#0277bd" }, // 蓝
+    { range: [31, 40], name: "丙火阳雷", color: "#ff3d00", shadow: "#d50000" }, // 红
+    { range: [41, 50], name: "戊土冥雷", color: "#ffca28", shadow: "#ff6f00" }, // 黄
+    { range: [51, 60], name: "庚金劫雷", color: "#ffd700", shadow: "#ffff00" }, // 金
+    { range: [61, 70], name: "巽风煞雷", color: "#1de9b6", shadow: "#004d40" }, // 青
+    { range: [71, 80], name: "太阴冰雷", color: "#e040fb", shadow: "#aa00ff" }, // 紫
+    { range: [81, 90], name: "六道轮回雷", color: "#ff1744", shadow: "#b71c1c" }, // 血红
+    { range: [91, 95], name: "九天玄刹雷", color: "#000000", shadow: "#ffffff" }, // 黑芯白边
+    { range: [96, 99], name: "紫霄神雷", color: "#d500f9", shadow: "#6200ea" }, // 深紫
+    { range: [100, 100], name: "混沌灭世雷", color: "#ff0000", shadow: "#ff0000" } // 终极红
+];
+
 const game = {
     data: {
         name: "无名",
@@ -563,7 +586,6 @@ const game = {
         realmFails: 0
     },
     
-    // hold: 增加 critMult 用于存储暴击翻倍
     hold: { active: false, startTime: 0, timer: null, currentMult: 1, critMult: 1, lastCritTime: 0 },
 
     init() { ui.init(); this.loop(); },
@@ -582,16 +604,12 @@ const game = {
         let skillMult = 1;
         this.data.skills.forEach(s => {
             if(s.level > 0) {
-                // 新公式：基础倍率 * 等级。 例如 基础效能2，等级10 => x20
-                // 叠加方式：不同功法之间通常是乘法
-                // 但为了避免数值过早溢出，这里使用 (1 + Power*Level)
                 skillMult *= (1 + s.power * s.level);
             }
         });
 
         const rootMult = CONFIG.ROOTS[this.data.rootIdx].mult;
         const weaponMult = CONFIG.WEAPONS[this.data.weaponIdx].mult;
-        // 总长按倍率 = 时间倍率 * 暴击倍率
         const holdMult = this.hold.currentMult * this.hold.critMult;
 
         return base * skillMult * rootMult * weaponMult * holdMult;
@@ -766,54 +784,91 @@ const game = {
     },
 
     async runTribulation() {
-        const log = (m, c='#fff') => {
-            const d = document.getElementById('trib-console');
-            d.innerHTML += `<div style="color:${c}; margin-bottom:2px;">${m}</div>`;
-            d.scrollTop = d.scrollHeight;
-        };
-        const thunder = document.getElementById('thunder-vfx');
+        const consoleEl = document.getElementById('trib-console');
+        const thunderEl = document.getElementById('thunder-vfx');
+        const overlay = document.getElementById('tribulation-overlay');
         const countDisp = document.getElementById('trib-step');
         
+        const logTrib = (idx, name, result, color) => {
+            consoleEl.innerHTML += `
+                <div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px dashed #333; padding-bottom:2px;">
+                    <span style="color:#666">[${idx}/100]</span> 
+                    <span style="color:${color}; font-weight:bold; text-shadow:0 0 5px ${color}">${name}</span>
+                    <br><span style="color:${result.success ? '#bbb' : '#ff3b30'}">${result.msg}</span>
+                </div>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        };
+
         const playerProtection = this.getProtectionScore();
-        log(`护体神光强度: ${playerProtection.toFixed(1)}/100`, "#00f2ff");
+        consoleEl.innerHTML = `<div style="color:#00f2ff; margin-bottom:10px; text-align:center;">=== 天威降临 ===<br>护体神光: ${playerProtection.toFixed(1)}%</div>`;
 
         let survived = true;
         let hp = 100;
         
         for(let i=1; i<=100; i++) {
-            countDisp.innerText = `${i} / 100 道`;
+            const lore = THUNDER_LORE.find(t => i >= t.range[0] && i <= t.range[1]);
             
-            const difficulty = i - 1; 
+            countDisp.innerText = `第 ${i} 道 · ${lore.name}`;
+            countDisp.style.color = lore.color;
+            countDisp.style.textShadow = `0 0 10px ${lore.shadow}`;
+
+            thunderEl.style.background = lore.color;
+            if(lore.color === '#000000') {
+                thunderEl.style.boxShadow = `0 0 10px #fff, 0 0 30px ${lore.shadow}`;
+            } else {
+                thunderEl.style.boxShadow = `0 0 20px ${lore.color}, 0 0 60px ${lore.shadow}`;
+            }
+
+            thunderEl.style.animation = 'none';
+            thunderEl.offsetHeight; 
+            thunderEl.style.animation = 'strike 0.15s ease-out';
+            
+            overlay.style.backgroundColor = `rgba(${parseInt(lore.color.slice(1,3),16)}, ${parseInt(lore.color.slice(3,5),16)}, ${parseInt(lore.color.slice(5,7),16)}, 0.2)`;
+            setTimeout(() => overlay.style.backgroundColor = 'rgba(0,0,0,0.96)', 100);
+
+            const difficulty = i * 0.95; 
             const baseChance = 100 - difficulty; 
             const finalChance = baseChance + playerProtection;
-            
             const roll = Math.random() * 100;
             
-            thunder.classList.add('thunder-strike');
-            setTimeout(()=>thunder.classList.remove('thunder-strike'), 30);
-            
+            let msg = "";
+
             if (roll > finalChance) {
-                log(`第 ${i} 道: 护体击穿!`, "#ff3b30");
+                hp -= (roll - finalChance) * 2; 
+                msg = "护体破碎，神魂受损！";
+                logTrib(i, lore.name, {success:false, msg:msg}, lore.color);
                 survived = false;
                 break;
             } else {
-                if(i % 20 === 0 || i === 1) log(`第 ${i} 道: 成功抵御`, "#888");
+                hp = Math.max(1, hp - (Math.random() * 2));
+                msg = "成功抵御";
+                if(i === 99) msg = "肉身濒临崩溃，咬牙坚持！";
+                if(i === 100) msg = "大道金光护体，万法不侵！";
+                
+                logTrib(i, lore.name, {success:true, msg:msg}, lore.color);
             }
             
-            hp = 100 - i;
             document.getElementById('trib-hp-bar').style.width = hp + '%';
-            document.getElementById('trib-hp-text').innerText = hp + '%';
+            document.getElementById('trib-hp-text').innerText = Math.floor(hp) + '%';
 
-            await this.sleep(40);
+            let delay = 60; 
+            if (i > 80) delay = 150; 
+            if (i > 90) delay = 300; 
+            if (i > 95) delay = 600; 
+            if (i === 99) delay = 1500; 
+
+            await this.sleep(delay);
         }
 
+        overlay.style.backgroundColor = 'rgba(0,0,0,0.96)';
+
         if(survived) {
-            log("渡劫成功，肉身成圣！", "#4caf50");
-            await this.sleep(1000);
+            consoleEl.innerHTML += `<div style="color:#4caf50; font-size:1.2rem; margin-top:20px; font-weight:bold;">渡劫成功！成就无上大道！</div>`;
+            await this.sleep(1500);
             this.handleWin();
         } else {
-            log("魂飞魄散...", "#ff0000");
-            await this.sleep(1000);
+            consoleEl.innerHTML += `<div style="color:#ff0000; font-size:1.2rem; margin-top:20px; font-weight:bold;">道消身殒...</div>`;
+            await this.sleep(1500);
             this.handleDeath();
         }
     },
@@ -958,7 +1013,6 @@ const ui = {
         }
 
         // --- 核心逻辑2：5秒判定暴击 ---
-        // 检查是否跨过了 5s, 10s, 15s 的门槛
         const checkPoint = Math.floor(diff / 5);
         if (checkPoint > game.hold.lastCritTime && diff >= 5) {
             game.hold.lastCritTime = checkPoint;
