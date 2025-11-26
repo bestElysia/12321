@@ -611,7 +611,7 @@ const THUNDER_LORE = [
     { range: [100, 100], name: "混沌灭世雷", color: "#ff0000", shadow: "#ff0000" } // 终极红
 ];
 
-// --- 心魔问答题库 ---
+// --- 精选3道心魔问答 ---
 const TRIB_QUESTIONS = [
     {
         q: "道友借钱不还，你该怎么办？",
@@ -626,52 +626,10 @@ const TRIB_QUESTIONS = [
         reason: "长生不老的第一个秘诀：少管闲事。"
     },
     {
-        q: "渡劫时天劫突然变成九九八十一道紫霄神雷，你：",
-        opts: ["硬抗，男子汉大丈夫", "立刻认输，改修散仙", "掏出手机给天道发红包求放水", "大喊“同道中人，我们都是紫色爱好者！”"],
-        ans: 2,
-        reason: "天道也看余额。"
-    },
-    {
         q: "你捡到了一只受伤的九尾狐狸精，她说可以实现你一个愿望：",
         opts: ["要她当道侣", "要无上功法", "要一亿灵石", "让她把自己伤得再重一点"],
         ans: 3,
         reason: "因为她真正的报恩方式是“吸干你精血”，伤得越重吸得越少。"
-    },
-    {
-        q: "洞府门口天天有凡人来求仙，你：",
-        opts: ["全部收为杂役弟子", "设个阵法自动轰杀", "挂牌“招收挂名弟子，一人10灵石”", "每天换个马甲自己去求仙，感动自己"],
-        ans: 2,
-        reason: "仙界基本收入来源之一。"
-    },
-    {
-        q: "你终于飞升仙界，结果发现仙界灵气比下界还稀薄？",
-        opts: ["找天皇告状", "怀疑自己飞升假了", "立刻开溜去魔界发展", "明白真相：原来仙界才是最大的凡人区"],
-        ans: 3,
-        reason: "灵气都被大佬们用阵法圈走了。"
-    },
-    {
-        q: "你和仇家同时卡在化神巅峰一万年，谁先突破谁就能弄死对方，你：",
-        opts: ["拼命闭关", "去他洞府门口摆摊卖“突破瓶颈丹（假的）”", "散布谣言说他已经突破了", "直接自爆元婴拉他同归于尽"],
-        ans: 2,
-        reason: "他一慌就走火入魔，你自动赢。"
-    },
-    {
-        q: "仙帝公开招婿，奖励混沌至宝，你发现自己是女装大佬：",
-        opts: ["忍痛拒绝", "女装参赛", "举报仙帝性别歧视", "带着基友团一起女装参赛"],
-        ans: 1,
-        reason: "至宝到手后再变回男人，谁敢说啥？"
-    },
-    {
-        q: "你发现自己是气运之子，但作者太监了：",
-        opts: ["哭天抢地", "自己写后续", "立刻退掉主角光环，转修幕后黑手流", "找到作者肉身强行续命"],
-        ans: 2,
-        reason: "气运之子一旦太监必死，黑幕才永生。"
-    },
-    {
-        q: "最终极难题：你终于修到大罗金仙，跳出三界外，不在五行中，发现……其实什么都没有，你：",
-        opts: ["崩溃大哭", "开创新宇宙当创世神", "回去继续当你的仙帝", "意识到这才是真正的“无欲无求”"],
-        ans: 3,
-        reason: "恭喜悟道，下一劫自动圆满。"
     }
 ];
 
@@ -881,19 +839,18 @@ const game = {
     startTribulation() {
         this.data.isTribulating = true;
         document.getElementById('tribulation-overlay').classList.remove('hidden');
+        document.getElementById('modal-trib-fail').classList.add('hidden'); // 确保失败弹窗关闭
+        document.getElementById('question-overlay').classList.add('hidden'); // 确保问题弹窗关闭
         document.getElementById('trib-console').innerHTML = '';
         document.getElementById('trib-hp-bar').style.width = '100%';
         document.getElementById('trib-hp-text').innerText = '100%';
         this.runTribulation();
     },
 
-    // 核心问答逻辑：Promise等待用户点击
-    askHeartDemon(qIdx) {
+    // 核心问答逻辑
+    askHeartDemon(qData) {
         return new Promise(resolve => {
             const overlay = document.getElementById('question-overlay');
-            const qData = TRIB_QUESTIONS[qIdx];
-            if(!qData) { resolve({success:true}); return; }
-
             document.getElementById('q-text').innerText = qData.q;
             const optsDiv = document.getElementById('q-opts');
             optsDiv.innerHTML = '';
@@ -905,7 +862,7 @@ const game = {
                 btn.onclick = () => {
                     overlay.classList.add('hidden');
                     if(i === qData.ans) {
-                        resolve({success:true, msg:"道心通明，心魔消散"});
+                        resolve({success:true, msg:"道心通明"});
                     } else {
                         resolve({success:false, msg:qData.reason});
                     }
@@ -915,6 +872,34 @@ const game = {
 
             overlay.classList.remove('hidden');
         });
+    },
+
+    // 触发心魔劫阶段
+    async runHeartDemonPhase() {
+        const consoleEl = document.getElementById('trib-console');
+        consoleEl.innerHTML += `<br><div style="color:#ff0055; font-size:1rem; font-weight:bold; text-align:center; margin:10px 0;">>>> 诸天雷劫已过，心魔问心开始 <<<</div>`;
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+        await this.sleep(1000);
+
+        for (let i = 0; i < TRIB_QUESTIONS.length; i++) {
+            consoleEl.innerHTML += `<div style="color:#fff; margin-bottom:5px;">[问心 ${i+1}/3] 心魔侵袭...</div>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+            
+            const result = await this.askHeartDemon(TRIB_QUESTIONS[i]);
+            
+            if (!result.success) {
+                consoleEl.innerHTML += `<div style="color:#ff3b30;">回答错误：${result.msg}</div>`;
+                this.handleTribFail(result.msg);
+                return;
+            } else {
+                consoleEl.innerHTML += `<div style="color:#00e676;">心魔退散！</div>`;
+                consoleEl.scrollTop = consoleEl.scrollHeight;
+                await this.sleep(800);
+            }
+        }
+        
+        // 全对
+        this.handleWin();
     },
 
     handleTribFail(reason) {
@@ -955,27 +940,6 @@ const game = {
         let hp = 100;
         
         for(let i=1; i<=100; i++) {
-            // --- 触发心魔问答 (逢10触发) ---
-            if (i % 10 === 0) {
-                const qIndex = (i / 10) - 1; // 10->0, 20->1...
-                if (qIndex < TRIB_QUESTIONS.length) {
-                    consoleEl.innerHTML += `<div style="color:#ff0055; margin:5px 0; font-weight:bold;">>>> 心魔入侵，道心试炼 <<<</div>`;
-                    consoleEl.scrollTop = consoleEl.scrollHeight;
-                    
-                    // 暂停雷劫，等待回答
-                    const result = await this.askHeartDemon(qIndex);
-                    
-                    if (!result.success) {
-                        logTrib(i, "心魔劫", {success:false, msg: "道心破碎！"}, "#ff0000");
-                        this.handleTribFail(result.msg);
-                        return; // 直接退出函数，中断渡劫
-                    } else {
-                        logTrib(i, "心魔劫", {success:true, msg: "道心坚定，破除虚妄"}, "#00e676");
-                    }
-                }
-            }
-            // --------------------------------
-
             const lore = THUNDER_LORE.find(t => i >= t.range[0] && i <= t.range[1]);
             
             countDisp.innerText = `第 ${i} 道 · ${lore.name}`;
@@ -1032,11 +996,11 @@ const game = {
         overlay.style.backgroundColor = 'rgba(0,0,0,0.96)';
 
         if(survived) {
-            consoleEl.innerHTML += `<div style="color:#4caf50; font-size:1.2rem; margin-top:20px; font-weight:bold;">渡劫成功！成就无上大道！</div>`;
+            consoleEl.innerHTML += `<div style="color:#4caf50; font-size:1.2rem; margin-top:20px; font-weight:bold;">肉身渡劫成功！准备迎接心魔...</div>`;
             await this.sleep(1500);
-            this.handleWin();
-        } else if (!survived && hp <= 0) {
-            // 只有因为没血挂掉的才走轮回，答错题的上面已经return了
+            // 进入心魔问答环节
+            await this.runHeartDemonPhase();
+        } else {
             consoleEl.innerHTML += `<div style="color:#ff0000; font-size:1.2rem; margin-top:20px; font-weight:bold;">道消身殒...</div>`;
             await this.sleep(1500);
             this.handleDeath();
@@ -1059,7 +1023,7 @@ const game = {
             <div style="position:absolute; top:0; left:0; width:100%; height:100%; overflow:hidden; pointer-events:none;" id="victory-particles"></div>
             <h1 class="victory-title">证道真仙</h1>
             <div class="victory-badge">绝世无双</div>
-            <p class="victory-desc">恭喜道友 <b>${this.data.name}</b><br>渡过百雷天劫，肉身成圣，位列仙班！<br>修仙之路漫漫，此世已臻圆满。</p>
+            <p class="victory-desc">恭喜道友 <b>${this.data.name}</b><br>渡过百雷天劫与心魔问心，肉身成圣，位列仙班！<br>修仙之路漫漫，此世已臻圆满。</p>
             <button class="cultivate-btn-lg active victory-btn" onclick="game.reincarnate()">再入轮回</button>
         `;
         
